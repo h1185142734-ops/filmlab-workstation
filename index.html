@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FilmLab">
+    <meta name="application-name" content="FilmLab">
+    <meta name="theme-color" content="#0A0C12">
+    <title>FilmLab - 个人胶片冲洗工作台</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="vendor/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- ============ 顶部全局操作栏 ============ -->
+    <header class="topbar">
+        <!-- 移动端菜单按钮 -->
+        <button class="topbar-menu-toggle" id="menuToggle" aria-label="打开菜单">
+            <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <div class="topbar-brand">
+            <svg class="brand-icon" viewBox="0 0 48 48" fill="none">
+                <rect x="6" y="10" width="36" height="28" rx="4" stroke="currentColor" stroke-width="2.5"/>
+                <circle cx="24" cy="24" r="8" stroke="currentColor" stroke-width="2.5"/>
+                <circle cx="24" cy="24" r="3" fill="currentColor"/>
+                <rect x="14" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="2.5"/>
+            </svg>
+            <span class="brand-text">Film<span>Lab</span></span>
+        </div>
+
+        <div class="topbar-search">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 16L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input type="text" id="globalSearch" placeholder="搜索冲洗记录、胶卷型号、药水批次...">
+        </div>
+
+        <div class="topbar-actions">
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换主题">
+                <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" width="18" height="18" style="display:none;"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <button class="topbar-btn" onclick="switchTab('notifications')" title="消息通知">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="dot" id="topbarNotifDot" style="display:none;"></span>
+            </button>
+            <button class="topbar-btn topbar-settings-btn" onclick="switchTab('settings')" title="设置">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="topbar-avatar" id="topbarAvatar" title="点击自定义" onclick="openAvatarModal()">FL</div>
+        </div>
+    </header>
+
+    <!-- ============ 侧边导航栏 ============ -->
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-close" id="sidebarClose">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+                <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <!-- 统计卡片组 -->
+        <div class="sidebar-stats" id="sidebarStats">
+            <!-- 由JS生成 -->
+        </div>
+
+        <!-- 新建按钮 -->
+        <button class="new-record-btn" onclick="startNewRecord()">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            开始新批次
+        </button>
+
+        <!-- 功能入口 -->
+        <div class="sidebar-section-label">功能模块</div>
+        <nav class="nav-menu">
+            <a class="nav-item active" data-tab="process-select" onclick="switchTab('process-select')">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="2"/></svg>
+                <span>冲洗台</span>
+            </a>
+            <a class="nav-item" data-tab="new-record" onclick="switchTab('new-record')">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>开始冲洗</span>
+            </a>
+            <a class="nav-item" data-tab="record-list" onclick="switchTab('record-list')">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>批次记录</span>
+            </a>
+            <a class="nav-item" data-tab="inventory" onclick="switchTab('inventory')">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+                <span>药水与物料</span>
+            </a>
+            <a class="nav-item" data-tab="gallery" onclick="switchTab('gallery')">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>成片档案</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- 移动端侧边栏遮罩 -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- ============ 主内容区 ============ -->
+    <main class="main-content" id="mainContent">
+        <!-- ============ 标签页1：冲洗方案选择 ============ -->
+        <section class="tab-content active" id="tab-process-select">
+            <div class="workspace-heading">
+                <div>
+                    <h1 class="page-title">冲洗台</h1>
+                    <p class="page-subtitle">当前批次、计时进度与最近一次冲洗结果</p>
+                </div>
+                <div class="workspace-heading-actions">
+                    <button class="btn btn-ghost" onclick="openSampleDataModal()">载入示例</button>
+                    <button class="btn btn-primary workspace-new-btn" onclick="startNewRecord()">＋ 开始新批次</button>
+                </div>
+            </div>
+
+            <div class="workspace-grid">
+                <section class="workspace-stage" aria-label="冲洗批次">
+                    <div class="workspace-stage-caption">
+                        <span class="workspace-eyebrow">LIVE BATCHES</span>
+                        <span id="workspaceBatchCount">当前没有进行中的计时器</span>
+                    </div>
+                    <div class="workspace-stack" id="workspaceStack"></div>
+                </section>
+
+                <aside class="workspace-inspector" id="workspaceInspector">
+                    <div class="workspace-inspector-empty">
+                        <span>当前批次详情</span>
+                        <small>开始冲洗或选择一张批次卡片</small>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="section-header workspace-template-heading">
+                <div>
+                    <h2>选择冲洗工艺</h2>
+                    <p>先确定工艺，再进入本次冲洗参数与计时</p>
+                </div>
+                <button class="btn btn-outline" onclick="openCustomProcessModal()">新增自定义工艺</button>
+            </div>
+
+            <div class="process-grid" id="processGrid">
+                <!-- 预设流程卡片由JS生成 -->
+            </div>
+
+            <div class="custom-process-section">
+                <div class="section-header">
+                    <h2>自定义流程</h2>
+                </div>
+                <div class="custom-process-list" id="customProcessList">
+                    <!-- 自定义流程列表由JS生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 标签页2：新建冲洗记录 ============ -->
+        <section class="tab-content" id="tab-new-record">
+            <div class="page-header">
+                <h1 class="page-title" id="formTitle">开始冲洗</h1>
+                <p class="page-subtitle" id="formSubtitle">记录胶卷、药水批次与实际步骤</p>
+            </div>
+
+            <!-- 当前选择的流程提示 -->
+            <div class="process-banner" id="processBanner">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>当前流程：<strong id="currentProcessName">未选择</strong></span>
+                <button class="btn-text" onclick="switchTab('process-select')">重新选择</button>
+            </div>
+
+            <form id="recordForm" class="record-form">
+                <input type="hidden" id="recordId">
+
+                <!-- 1. 基础记录信息 -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-number">01</span>
+                        <h3>基础记录信息</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label>记录名称 <span class="required">*</span></label>
+                            <input type="text" id="recName" placeholder="如：2026.07 伊尔福HP5户外扫街">
+                        </div>
+                        <div class="form-field">
+                            <label>冲洗流程类型 <span class="required">*</span></label>
+                            <select id="recProcessType">
+                                <option value="">请先选择冲洗方案</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>冲洗日期 <span class="required">*</span></label>
+                            <input type="date" id="recDate">
+                        </div>
+                        <div class="form-field">
+                            <label>冲洗开始时间</label>
+                            <input type="time" id="recStartTime">
+                        </div>
+                        <div class="form-field">
+                            <label>冲洗结束时间</label>
+                            <input type="time" id="recEndTime">
+                        </div>
+                        <div class="form-field">
+                            <label>拍摄时间</label>
+                            <input type="date" id="recShootDate">
+                        </div>
+                        <div class="form-field">
+                            <label>拍摄场景</label>
+                            <select id="recScene">
+                                <option value="">请选择</option>
+                                <option value="风光">风光</option>
+                                <option value="人像">人像</option>
+                                <option value="街拍">街拍</option>
+                                <option value="静物">静物</option>
+                                <option value="夜景">夜景</option>
+                                <option value="建筑">建筑</option>
+                                <option value="纪实">纪实</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>室温 (°C)</label>
+                            <input type="number" id="recRoomTemp" step="0.1" placeholder="20">
+                        </div>
+                        <div class="form-field">
+                            <label>水温 (°C)</label>
+                            <input type="number" id="recWaterTemp" step="0.1" placeholder="20">
+                        </div>
+                        <div class="form-field">
+                            <label>环境湿度 (%)</label>
+                            <input type="number" id="recHumidity" step="1" placeholder="50">
+                        </div>
+                        <div class="form-field full-width">
+                            <details class="shooting-info-section optional-section">
+                                <summary>拍摄备注（可选）</summary>
+                                <div class="form-grid" style="margin-top: 10px;">
+                                    <div class="form-field">
+                                        <label>相机型号</label>
+                                        <input type="text" id="shootCamera" placeholder="如：Leica M6, Nikon FM2">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>镜头</label>
+                                        <input type="text" id="shootLens" placeholder="如：Summicron 50mm f/2">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>常用光圈</label>
+                                        <input type="text" id="shootAperture" placeholder="如：f/8">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>常用快门</label>
+                                        <input type="text" id="shootShutter" placeholder="如：1/125">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>测光模式</label>
+                                        <select id="shootMetering">
+                                            <option value="">请选择</option>
+                                            <option value="中央重点">中央重点</option>
+                                            <option value="点测光">点测光</option>
+                                            <option value="平均测光">平均测光</option>
+                                            <option value="矩阵测光">矩阵测光</option>
+                                            <option value="估测">估测</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label>曝光补偿</label>
+                                        <input type="text" id="shootExpComp" placeholder="如：+1 EV (迫冲)">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>拍摄地点</label>
+                                        <input type="text" id="shootLocation" placeholder="如：北京胡同">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>拍摄天气</label>
+                                        <select id="shootWeather">
+                                            <option value="">请选择</option>
+                                            <option value="晴天">晴天</option>
+                                            <option value="多云">多云</option>
+                                            <option value="阴天">阴天</option>
+                                            <option value="雨天">雨天</option>
+                                            <option value="雪天">雪天</option>
+                                            <option value="室内">室内</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                        <div class="form-field full-width">
+                            <label>个人备注</label>
+                            <textarea id="recNotes" rows="2" placeholder="操作心得、踩坑记录、优化建议..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 胶卷信息 -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-number">02</span>
+                        <h3>胶卷信息</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label>胶卷品牌</label>
+                            <select id="filmBrand">
+                                <option value="">请选择</option>
+                                <option value="柯达 Kodak">柯达 Kodak</option>
+                                <option value="富士 Fujifilm">富士 Fujifilm</option>
+                                <option value="伊尔福 Ilford">伊尔福 Ilford</option>
+                                <option value="乐凯 Lucky">乐凯 Lucky</option>
+                                <option value="柯尼卡 Konica">柯尼卡 Konica</option>
+                                <option value="爱克发 Agfa">爱克发 Agfa</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>胶卷型号</label>
+                            <input type="text" id="filmModel" placeholder="HP5、TX400、Pro400H、E100等">
+                        </div>
+                        <div class="form-field">
+                            <label>胶卷类型</label>
+                            <select id="filmType">
+                                <option value="">请选择</option>
+                                <option value="黑白负片">黑白负片</option>
+                                <option value="彩色负片">彩色负片</option>
+                                <option value="彩色反转片">彩色反转片</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>感光度 (ISO)</label>
+                            <select id="filmIso">
+                                <option value="">请选择</option>
+                                <option value="ISO 50">ISO 50</option>
+                                <option value="ISO 100">ISO 100</option>
+                                <option value="ISO 200">ISO 200</option>
+                                <option value="ISO 400">ISO 400</option>
+                                <option value="ISO 800">ISO 800</option>
+                                <option value="ISO 1600">ISO 1600</option>
+                                <option value="ISO 3200">ISO 3200</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>胶卷批次号</label>
+                            <input type="text" id="filmBatch" placeholder="批次编号">
+                        </div>
+                        <div class="form-field">
+                            <label>胶卷有效期</label>
+                            <input type="date" id="filmExpiry">
+                        </div>
+                        <div class="form-field">
+                            <label>拍摄张数</label>
+                            <input type="number" id="filmShots" placeholder="36">
+                        </div>
+                        <div class="form-field">
+                            <label>剩余张数</label>
+                            <input type="number" id="filmRemaining" placeholder="0">
+                        </div>
+                        <div class="form-field">
+                            <label>存放时长</label>
+                            <input type="text" id="filmStorageDuration" placeholder="如：6个月">
+                        </div>
+                        <div class="form-field">
+                            <label>存放环境</label>
+                            <input type="text" id="filmStorageEnv" placeholder="如：冰箱冷藏">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 冲洗设备信息 -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-number">03</span>
+                        <h3>冲洗设备信息</h3>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="addEquipmentRow()">+ 添加设备</button>
+                    </div>
+                    <div class="dynamic-list" id="equipmentList">
+                        <!-- 设备行由JS生成 -->
+                    </div>
+                    <div class="form-grid" style="margin-top: 16px;">
+                        <div class="form-field full-width">
+                            <label>设备异常记录</label>
+                            <select id="equipmentIssue">
+                                <option value="无">无</option>
+                                <option value="温度不准">温度不准</option>
+                                <option value="漏水">漏水</option>
+                                <option value="计时偏差">计时偏差</option>
+                                <option value="震荡异常">震荡异常</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 药水药剂信息 -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-number">04</span>
+                        <h3>药水药剂信息</h3>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="openRecipeImportModal()">从配方导入</button>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="addChemicalRow()">+ 添加药水</button>
+                    </div>
+                    <div class="dynamic-list" id="chemicalList">
+                        <!-- 药水行由JS生成 -->
+                    </div>
+                </div>
+
+                <!-- 5. 分步冲洗操作参数 -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-number">05</span>
+                        <h3>分步冲洗操作参数</h3>
+                        <span class="form-card-hint" id="stepsHint">通用步骤</span>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="addStepRow()">+ 添加步骤</button>
+                    </div>
+                    <div class="dynamic-list" id="stepList">
+                        <!-- 步骤行由JS生成 -->
+                    </div>
+
+                    <!-- 清洗待办清单 -->
+                    <div class="cleaning-checklist" id="cleaningChecklist">
+                        <div class="cleaning-checklist-title">
+                            <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            设备清洗待办清单
+                            <span style="font-size:10px; color:var(--text-dim); margin-left:auto;" id="cleaningProgress">0/0</span>
+                        </div>
+                        <div id="cleaningItems">
+                            <!-- 清洗项由JS生成 -->
+                        </div>
+                        <div class="cleaning-add">
+                            <input type="text" id="cleaningAddInput" placeholder="添加自定义清洗设备..." onkeypress="if(event.key==='Enter')addCleaningItem()">
+                            <button onclick="addCleaningItem()">添加</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. 成片效果与复盘 -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-number">06</span>
+                        <h3>成片效果与复盘数据</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field full-width">
+                            <label>成片整体评价</label>
+                            <div class="rating-stars" id="ratingStars">
+                                <span class="star" data-val="1">★</span>
+                                <span class="star" data-val="2">★</span>
+                                <span class="star" data-val="3">★</span>
+                                <span class="star" data-val="4">★</span>
+                                <span class="star" data-val="5">★</span>
+                            </div>
+                            <input type="hidden" id="recRating" value="0">
+                        </div>
+                        <div class="form-field">
+                            <label>对比度</label>
+                            <select id="resContrast">
+                                <option value="">请选择</option>
+                                <option value="过低">过低</option>
+                                <option value="偏低">偏低</option>
+                                <option value="适中">适中</option>
+                                <option value="偏高">偏高</option>
+                                <option value="过高">过高</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>锐度</label>
+                            <select id="resSharpness">
+                                <option value="">请选择</option>
+                                <option value="偏软">偏软</option>
+                                <option value="适中">适中</option>
+                                <option value="锐利">锐利</option>
+                                <option value="极锐">极锐</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>颗粒感</label>
+                            <select id="resGrain">
+                                <option value="">请选择</option>
+                                <option value="细腻">细腻</option>
+                                <option value="适中">适中</option>
+                                <option value="明显">明显</option>
+                                <option value="粗糙">粗糙</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>色彩饱和度</label>
+                            <select id="resSaturation">
+                                <option value="">请选择</option>
+                                <option value="偏淡">偏淡</option>
+                                <option value="适中">适中</option>
+                                <option value="浓郁">浓郁</option>
+                                <option value="过饱和">过饱和</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>曝光准确度</label>
+                            <select id="resExposure">
+                                <option value="">请选择</option>
+                                <option value="严重欠曝">严重欠曝</option>
+                                <option value="轻微欠曝">轻微欠曝</option>
+                                <option value="准确">准确</option>
+                                <option value="轻微过曝">轻微过曝</option>
+                                <option value="严重过曝">严重过曝</option>
+                            </select>
+                        </div>
+                        <div class="form-field full-width">
+                            <label>问题记录（可多选）</label>
+                            <div class="checkbox-group" id="issueGroup">
+                                <label class="checkbox-item"><input type="checkbox" value="过曝"> 过曝</label>
+                                <label class="checkbox-item"><input type="checkbox" value="欠曝"> 欠曝</label>
+                                <label class="checkbox-item"><input type="checkbox" value="显影过度"> 显影过度</label>
+                                <label class="checkbox-item"><input type="checkbox" value="显影不足"> 显影不足</label>
+                                <label class="checkbox-item"><input type="checkbox" value="药水污染"> 药水污染</label>
+                                <label class="checkbox-item"><input type="checkbox" value="划痕"> 划痕</label>
+                                <label class="checkbox-item"><input type="checkbox" value="灰雾"> 灰雾</label>
+                                <label class="checkbox-item"><input type="checkbox" value="水渍"> 水渍</label>
+                                <label class="checkbox-item"><input type="checkbox" value="新月形折痕"> 新月形折痕</label>
+                                <label class="checkbox-item"><input type="checkbox" value="静电斑"> 静电斑</label>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label>扫描设备</label>
+                            <input type="text" id="scanDevice" placeholder="如：Epson V850">
+                        </div>
+                        <div class="form-field">
+                            <label>扫描分辨率</label>
+                            <input type="text" id="scanResolution" placeholder="如：4800dpi">
+                        </div>
+                        <div class="form-field">
+                            <label>扫描色彩模式</label>
+                            <select id="scanColorMode">
+                                <option value="">请选择</option>
+                                <option value="黑白灰阶">黑白灰阶</option>
+                                <option value="24位彩色">24位彩色</option>
+                                <option value="48位彩色">48位彩色</option>
+                            </select>
+                        </div>
+                        <div class="form-field full-width">
+                            <label>成片样张上传</label>
+                            <div class="image-upload-area" id="imageUploadArea">
+                                <input type="file" id="imageInput" accept="image/*" multiple style="display:none;" onchange="handleImageUpload(event)">
+                                <div class="upload-placeholder" onclick="document.getElementById('imageInput').click()">
+                                    <svg viewBox="0 0 24 24" fill="none" width="32" height="32"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    <span>点击上传成片样张</span>
+                                </div>
+                            </div>
+                            <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label>本次冲洗优化总结</label>
+                            <textarea id="recSummary" rows="3" placeholder="本次冲洗学到了什么？哪些参数表现好？"></textarea>
+                        </div>
+                        <div class="form-field full-width">
+                            <label>下次参数调整方案</label>
+                            <textarea id="recNextAdjust" rows="2" placeholder="下次冲洗需要调整哪些参数？"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 表单操作按钮 -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="resetForm()">清空表单</button>
+                    <button type="button" class="btn btn-ghost" onclick="switchTab('record-list')">取消</button>
+                    <button type="submit" class="btn btn-primary" onclick="saveRecord(event)">
+                        <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        保存记录
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ============ 标签页3：冲洗记录列表 ============ -->
+        <section class="tab-content" id="tab-record-list">
+            <div class="page-header">
+                <h1 class="page-title">批次记录</h1>
+                <p class="page-subtitle">回看每次冲洗的工艺、实际参数与成片结果</p>
+            </div>
+
+            <!-- 筛选区 -->
+            <div class="filter-bar">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>流程类型</label>
+                        <select id="filterProcess" onchange="renderRecordList()">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>胶卷品牌</label>
+                        <select id="filterBrand" onchange="renderRecordList()">
+                            <option value="">全部</option>
+                            <option value="柯达 Kodak">柯达</option>
+                            <option value="富士 Fujifilm">富士</option>
+                            <option value="伊尔福 Ilford">伊尔福</option>
+                            <option value="乐凯 Lucky">乐凯</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>成片评分</label>
+                        <select id="filterRating" onchange="renderRecordList()">
+                            <option value="">全部</option>
+                            <option value="5">五星</option>
+                            <option value="4">四星及以上</option>
+                            <option value="3">三星及以上</option>
+                            <option value="2">二星及以上</option>
+                            <option value="1">一星及以上</option>
+                            <option value="0">未评分</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>复盘状态</label>
+                        <select id="filterReview" onchange="renderRecordList()">
+                            <option value="">全部</option>
+                            <option value="reviewed">已复盘</option>
+                            <option value="unreviewed">待复盘</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>日期范围</label>
+                        <div class="date-range">
+                            <input type="date" id="filterDateStart" onchange="renderRecordList()">
+                            <span>~</span>
+                            <input type="date" id="filterDateEnd" onchange="renderRecordList()">
+                        </div>
+                    </div>
+                    <div class="filter-item filter-search">
+                        <label>关键词搜索</label>
+                        <input type="text" id="filterKeyword" placeholder="记录名称/胶卷编号/备注" oninput="renderRecordList()">
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <div class="sort-control">
+                        <label>排序：</label>
+                        <select id="sortBy" onchange="renderRecordList()">
+                            <option value="date-desc">冲洗日期 ↓</option>
+                            <option value="date-asc">冲洗日期 ↑</option>
+                            <option value="rating-desc">评分 ↓</option>
+                            <option value="rating-asc">评分 ↑</option>
+                            <option value="name-asc">名称 A-Z</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-sm btn-ghost" onclick="resetFilters()">重置筛选</button>
+                </div>
+            </div>
+
+            <!-- 批量操作栏 -->
+            <div class="batch-bar" id="batchBar" style="display:none;">
+                <span id="batchCount">已选择 0 条</span>
+                <button class="btn btn-sm btn-outline" onclick="batchExport()">批量导出</button>
+                <button class="btn btn-sm btn-outline" onclick="batchPrint()">批量打印</button>
+                <button class="btn btn-sm btn-danger-outline" onclick="batchDelete()">批量删除</button>
+                <button class="btn btn-sm btn-ghost" onclick="clearSelection()">取消选择</button>
+            </div>
+
+            <!-- 记录列表 -->
+            <div class="record-list-container">
+                <div class="record-list-header">
+                    <span class="list-info" id="listInfo">共 0 条记录</span>
+                    <div>
+                        <button class="btn btn-sm btn-ghost" onclick="switchTab('gallery')">成片档案</button>
+                        <button class="btn btn-sm btn-ghost" onclick="switchTab('charts')">数据汇总</button>
+                        <button class="btn btn-sm btn-outline" onclick="exportAllRecords()">导出全部</button>
+                        <button class="btn btn-sm btn-primary" onclick="switchTab('new-record')">开始冲洗</button>
+                    </div>
+                </div>
+                <div class="record-list" id="recordList">
+                    <!-- 记录卡片由JS生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 标签页4：物料库存管理 ============ -->
+        <section class="tab-content" id="tab-inventory">
+            <div class="page-header">
+                <h1 class="page-title">药水与物料</h1>
+                <p class="page-subtitle">追踪药水批次、胶卷库存与设备维护状态</p>
+            </div>
+
+            <div class="inventory-tabs">
+                <button class="inv-tab active" data-inv="film" onclick="switchInvTab('film')">胶卷库存</button>
+                <button class="inv-tab" data-inv="chemical" onclick="switchInvTab('chemical')">药水库存</button>
+                <button class="inv-tab" data-inv="equipment" onclick="switchInvTab('equipment')">设备台账</button>
+            </div>
+
+            <!-- 胶卷库存 -->
+            <div class="inv-content active" id="inv-film">
+                <div class="inv-toolbar">
+                    <button class="btn btn-sm btn-primary" onclick="openInvModal('film')">+ 添加胶卷</button>
+                </div>
+                <div class="inv-grid" id="filmInventory"></div>
+            </div>
+
+            <!-- 药水库存 -->
+            <div class="inv-content" id="inv-chemical">
+                <div class="inv-toolbar">
+                    <button class="btn btn-sm btn-ghost" onclick="switchTab('recipes')">药水配方</button>
+                    <button class="btn btn-sm btn-primary" onclick="openInvModal('chemical')">+ 添加药水</button>
+                </div>
+                <div class="inv-grid" id="chemicalInventory"></div>
+            </div>
+
+            <!-- 设备台账 -->
+            <div class="inv-content" id="inv-equipment">
+                <div class="inv-toolbar">
+                    <button class="btn btn-sm btn-primary" onclick="openInvModal('equipment')">+ 添加设备</button>
+                </div>
+                <div class="inv-grid" id="equipmentInventory"></div>
+            </div>
+        </section>
+
+        <!-- ============ 标签页：成片画廊 ============ -->
+        <section class="tab-content" id="tab-gallery">
+            <div class="page-header">
+                <h1 class="page-title">成片档案</h1>
+                <p class="page-subtitle">从冲洗批次中集中查看样片与扫描结果</p>
+            </div>
+            <div class="gallery-stage" id="galleryStage">
+                <div class="gallery-empty" id="galleryEmpty">
+                    <svg viewBox="0 0 24 24" fill="none" width="48" height="48"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <p>暂无成片样张</p>
+                    <p style="font-size:11px; margin-top:4px;">在新建冲洗记录时上传成片样张，即可在此浏览</p>
+                    <button class="btn btn-sm btn-outline" onclick="openSampleDataModal()">载入示例查看效果</button>
+                </div>
+            </div>
+            <div class="gallery-nav" id="galleryNav" style="display:none;">
+                <button class="gallery-nav-btn" onclick="galleryPrev()">
+                    <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="gallery-nav-info" id="galleryInfo">1 / 1</span>
+                <button class="gallery-nav-btn" onclick="galleryNext()">
+                    <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+            <div class="gallery-thumbs" id="galleryThumbs" style="display:none;"></div>
+        </section>
+
+        <!-- ============ 标签页：药水配方 ============ -->
+        <section class="tab-content" id="tab-recipes">
+            <div class="page-header">
+                <h1 class="page-title">药水配方</h1>
+                <p class="page-subtitle">维护药水配比，并从配方直接带入本次冲洗</p>
+            </div>
+            <div class="section-header">
+                <h2>配方列表</h2>
+                <button class="btn btn-outline" onclick="openRecipeModal()">
+                    <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    新增配方
+                </button>
+            </div>
+            <div class="recipe-grid" id="recipeGrid">
+                <!-- 配方卡片由JS生成 -->
+            </div>
+        </section>
+
+        <!-- ============ 标签页5：数据可视化统计 ============ -->
+        <section class="tab-content" id="tab-charts">
+            <div class="page-header">
+                <h1 class="page-title">数据可视化统计</h1>
+                <p class="page-subtitle">可视化图表展示个人冲洗数据，辅助参数复盘与手法优化</p>
+            </div>
+
+            <!-- 指标卡片 -->
+            <div class="stats-cards" id="statsCards">
+                <!-- 由JS生成 -->
+            </div>
+
+            <!-- 图表区 -->
+            <div class="charts-grid">
+                <div class="chart-card large">
+                    <div class="chart-header">
+                        <h3>冲洗频次统计</h3>
+                        <div class="chart-tabs">
+                            <button class="chart-tab active" data-mode="month" onclick="switchChartMode('freq', 'month')">月度</button>
+                            <button class="chart-tab" data-mode="year" onclick="switchChartMode('freq', 'year')">年度</button>
+                        </div>
+                    </div>
+                    <div class="chart-body"><canvas id="chartFrequency"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header"><h3>胶卷类型占比</h3></div>
+                    <div class="chart-body"><canvas id="chartFilmType"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header"><h3>药水消耗统计</h3></div>
+                    <div class="chart-body"><canvas id="chartChemical"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header"><h3>成片质量评分分布</h3></div>
+                    <div class="chart-body"><canvas id="chartRating"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header"><h3>问题类型统计</h3></div>
+                    <div class="chart-body"><canvas id="chartIssues"></canvas></div>
+                </div>
+
+                <div class="chart-card large">
+                    <div class="chart-header">
+                        <h3>参数效果关联分析</h3>
+                        <select id="paramCorrSelect" onchange="renderParamCorrelation()">
+                            <option value="devTime">显影时长 vs 评分</option>
+                            <option value="devTemp">显影温度 vs 评分</option>
+                            <option value="waterTemp">水温 vs 评分</option>
+                        </select>
+                    </div>
+                    <div class="chart-body"><canvas id="chartCorrelation"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 标签页6：消息通知中心 ============ -->
+        <section class="tab-content" id="tab-notifications">
+            <div class="page-header">
+                <h1 class="page-title">消息通知中心</h1>
+                <p class="page-subtitle">药水过期、设备保养、冲洗复盘、库存预警等提醒消息聚合</p>
+            </div>
+
+            <div class="notif-toolbar">
+                <div class="notif-tabs">
+                    <button class="notif-tab active" data-filter="all" onclick="filterNotifications('all')">全部</button>
+                    <button class="notif-tab" data-filter="unread" onclick="filterNotifications('unread')">未读</button>
+                    <button class="notif-tab" data-filter="chemical" onclick="filterNotifications('chemical')">药水提醒</button>
+                    <button class="notif-tab" data-filter="equipment" onclick="filterNotifications('equipment')">设备保养</button>
+                    <button class="notif-tab" data-filter="review" onclick="filterNotifications('review')">复盘提醒</button>
+                    <button class="notif-tab" data-filter="cleaning" onclick="filterNotifications('cleaning')">清洗提醒</button>
+                    <button class="notif-tab" data-filter="stock" onclick="filterNotifications('stock')">库存预警</button>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline" onclick="markAllRead()">全部已读</button>
+                    <button class="btn btn-sm btn-ghost" onclick="clearAllNotifications()">清空消息</button>
+                </div>
+            </div>
+
+            <div class="notif-list" id="notifList">
+                <!-- 通知列表由JS生成 -->
+            </div>
+        </section>
+
+        <!-- ============ 标签页7：个人设置 ============ -->
+        <section class="tab-content" id="tab-settings">
+            <div class="page-header">
+                <h1 class="page-title">个人设置</h1>
+                <p class="page-subtitle">隐私权限、提醒规则、导出模板、数据备份恢复</p>
+            </div>
+
+            <div class="settings-grid">
+                <!-- 个性化自定义 -->
+                <div class="settings-card personalization-section">
+                    <h3>个性化自定义</h3>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">工作台名称</span>
+                            <span class="settings-desc">自定义工作台显示名称</span>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="settingWorkstationName" class="settings-select" placeholder="FilmLab" style="width:140px;">
+                            <button class="btn btn-sm btn-outline" onclick="saveWorkstationName()">保存</button>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">头像设置</span>
+                            <span class="settings-desc">自定义头像文字与配色</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="openAvatarModal()">编辑头像</button>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">主题模式</span>
+                            <span class="settings-desc">深色 / 浅色主题切换</span>
+                        </div>
+                        <select id="settingTheme" class="settings-select" onchange="setTheme(this.value)">
+                            <option value="dark">深色模式</option>
+                            <option value="light">浅色模式</option>
+                        </select>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">强调色</span>
+                            <span class="settings-desc">自定义界面强调色</span>
+                        </div>
+                        <div class="color-picker-grid" id="accentColorPicker" style="max-width:200px;">
+                            <!-- 颜色选项由JS生成 -->
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">玻璃透明度</span>
+                            <span class="settings-desc">调整玻璃面板透明度</span>
+                        </div>
+                        <input type="range" class="glass-opacity-slider" id="glassOpacitySlider" min="30" max="90" value="55" onchange="setGlassOpacity(this.value)" style="max-width:200px;">
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">背景色</span>
+                            <span class="settings-desc">自定义背景色</span>
+                        </div>
+                        <div class="color-picker-grid" id="bgColorPicker" style="max-width:200px;">
+                            <!-- 背景色选项由JS生成 -->
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">动画效果</span>
+                            <span class="settings-desc">启用/禁用界面动画</span>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="settingAnimations" checked onchange="toggleAnimations(this.checked)"><span class="toggle-slider"></span></label>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">计时器声音提示</span>
+                            <span class="settings-desc">计时器结束时播放提示音</span>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="settingTimerSound" checked onchange="saveSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">药水交叉污染提醒</span>
+                            <span class="settings-desc">每次新建冲洗记录时弹出安全提醒</span>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="settingContaminationWarning" checked onchange="saveSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                </div>
+
+                <!-- 隐私权限 -->
+                <div class="settings-card">
+                    <h3>隐私权限</h3>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">数据仅本人可见</span>
+                            <span class="settings-desc">所有冲洗记录、物料数据仅个人账号可见，无公开分享入口</span>
+                        </div>
+                        <div class="badge badge-locked">已锁定</div>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">数据加密存储</span>
+                            <span class="settings-desc">本地数据加密保护，防止数据泄露</span>
+                        </div>
+                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                    </div>
+                </div>
+
+                <!-- 提醒规则 -->
+                <div class="settings-card">
+                    <h3>提醒规则设置</h3>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">药水过期提醒</span>
+                            <span class="settings-desc">临近有效期提前提醒（天）</span>
+                        </div>
+                        <select id="settingChemExpire" class="settings-select" onchange="saveSettings()">
+                            <option value="7">7天</option>
+                            <option value="15" selected>15天</option>
+                            <option value="30">30天</option>
+                        </select>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">设备保养提醒</span>
+                            <span class="settings-desc">按保养周期定时推送保养通知</span>
+                        </div>
+                        <label class="toggle"><input type="checkbox" checked onchange="saveSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">冲洗复盘提醒</span>
+                            <span class="settings-desc">新增记录后提醒完成效果复盘</span>
+                        </div>
+                        <label class="toggle"><input type="checkbox" checked onchange="saveSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">库存预警提醒</span>
+                            <span class="settings-desc">胶卷/药水库存不足时推送补货提醒</span>
+                        </div>
+                        <label class="toggle"><input type="checkbox" checked onchange="saveSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                </div>
+
+                <!-- 导出设置 -->
+                <div class="settings-card">
+                    <h3>导出模板设置</h3>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">PDF日志模板</span>
+                            <span class="settings-desc">标准化冲洗日志PDF导出格式</span>
+                        </div>
+                        <select id="settingPdfTemplate" class="settings-select">
+                            <option value="standard">标准模板</option>
+                            <option value="detailed">详细模板（含样张）</option>
+                            <option value="simple">简洁模板</option>
+                        </select>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">Excel导出字段</span>
+                            <span class="settings-desc">选择导出Excel时包含的字段范围</span>
+                        </div>
+                        <select id="settingExcelFields" class="settings-select">
+                            <option value="all">全部字段</option>
+                            <option value="basic">仅基础信息</option>
+                            <option value="custom">自定义字段</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 数据备份恢复 -->
+                <div class="settings-card">
+                    <h3>数据备份与恢复</h3>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">存储使用情况</span>
+                            <span class="settings-desc" id="storageUsageDesc">计算中...</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="showStorageUsage()">刷新</button>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">导出全部数据</span>
+                            <span class="settings-desc">将所有冲洗记录、物料数据、图片导出为JSON备份文件</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="exportBackup()">导出备份</button>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">导入数据</span>
+                            <span class="settings-desc">从JSON备份文件恢复数据（含图片）</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="importBackup()">导入恢复</button>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">清理旧通知</span>
+                            <span class="settings-desc">删除30天前已读通知，释放存储空间</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="cleanupOldNotifications(); toast('旧通知已清理', 'success'); showStorageUsage();">清理</button>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <span class="settings-label">清空全部数据</span>
+                            <span class="settings-desc" style="color: #ff6b6b;">删除所有记录与物料数据（含IndexedDB图片），操作不可逆</span>
+                        </div>
+                        <button class="btn btn-sm btn-danger-outline" onclick="clearAllData()">清空数据</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============ 浮动快捷工具栏（替代底部Tab导航） ============ -->
+    <div class="quick-bar" id="quickBar">
+        <button class="quick-btn active" data-tab="process-select" onclick="switchTab('process-select')">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="2"/></svg>
+            <span>冲洗台</span>
+        </button>
+        <button class="quick-btn" data-tab="new-record" onclick="switchTab('new-record')">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>开始</span>
+        </button>
+        <button class="quick-btn" data-tab="record-list" onclick="switchTab('record-list')">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>批次</span>
+        </button>
+        <button class="quick-btn" data-tab="inventory" onclick="switchTab('inventory')">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+            <span>药水</span>
+        </button>
+        <button class="quick-btn" onclick="toggleTimerPanel()" title="多计时器">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2 2M9 2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>计时器</span>
+        </button>
+        <button class="quick-btn quick-more-btn" onclick="toggleMobileMenu()" title="更多功能">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg>
+            <span>更多</span>
+        </button>
+    </div>
+
+    <!-- ============ 移动端"更多"菜单 ============ -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+    <div class="mobile-menu-sheet" id="mobileMenuSheet">
+        <div class="mobile-menu-handle"></div>
+        <div class="mobile-menu-grid">
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); startNewRecord()">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>开始冲洗</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); switchTab('gallery')">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>成片档案</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); installPwa()">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 3v12M7 10l5 5 5-5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>安装到手机</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); switchTab('inventory')">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+                <span>药水与物料</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); switchTab('recipes')">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M9 2h6v4l4 2v14H5V8l4-2V2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 14h6M9 18h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>药水配方</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); switchTab('charts')">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M3 3v18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 14l4-4 4 4 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>数据统计</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); switchTab('notifications')">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>消息通知</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); switchTab('settings')">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>个人设置</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); toggleTimerPanel()">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2 2M9 2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>计时器</span>
+            </button>
+            <button class="mobile-menu-item" onclick="closeMobileMenu(); editQuickEnv()">
+                <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>温湿度</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============ 多计时器面板 ============ -->
+    <div class="timer-panel" id="timerPanel">
+        <div class="timer-panel-header">
+            <div class="timer-panel-title">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2 2M9 2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                冲洗计时器
+            </div>
+            <button class="timer-add-btn" onclick="toggleTimerForm()">+ 新建计时器</button>
+        </div>
+        <div class="timer-new-form" id="timerNewForm">
+            <input type="text" id="timerName" placeholder="计时器名称（如：显影）" style="width:100%;">
+            <div class="form-grid-mini">
+                <input type="number" id="timerMinutes" placeholder="分钟" min="0" max="999">
+                <input type="number" id="timerSeconds" placeholder="秒" min="0" max="59">
+                <button class="timer-add-btn" onclick="addTimer()" style="width:100%;">添加</button>
+            </div>
+        </div>
+        <div class="timer-list" id="timerList">
+            <div class="timer-empty">暂无计时器，点击「新建计时器」添加</div>
+        </div>
+    </div>
+
+    <!-- 背景色自定义层 -->
+    <div class="bg-custom-layer" id="bgCustomLayer"></div>
+
+    <!-- ============ 通用弹窗 ============ -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContainer">
+            <!-- 弹窗内容由JS注入 -->
+        </div>
+    </div>
+
+    <!-- ============ Toast提示 ============ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
