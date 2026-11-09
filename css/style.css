@@ -7402,6 +7402,11 @@ body::after {
     background: linear-gradient(rgba(40, 67, 98, 0.075), transparent);
 }
 
+/* 日间模式始终使用白色画布，深色背景偏好仅保留给夜间主题。 */
+[data-theme="light"] .bg-custom-layer {
+    background: #ffffff !important;
+}
+
 [data-theme="light"] .form-collapse-toggle {
     color: #256cad;
     border-color: rgba(79, 143, 240, 0.2);
@@ -7453,6 +7458,37 @@ body::after {
         inset 0 1px 0 rgba(255, 255, 255, 0.82),
         inset 0 0 0 1px rgba(79, 143, 240, 0.08),
         0 5px 14px rgba(48, 89, 133, 0.07);
+}
+
+[data-theme="light"] .workspace-card.active {
+    color: #ffffff;
+    background:
+        radial-gradient(ellipse at 16% 3%, rgba(207, 235, 255, 0.27), transparent 31%),
+        radial-gradient(ellipse at 92% 94%, rgba(67, 222, 198, 0.12), transparent 38%),
+        linear-gradient(145deg, rgba(43, 105, 174, 0.74), rgba(18, 57, 99, 0.78)),
+        rgba(255, 255, 255, 0.16);
+    -webkit-backdrop-filter: blur(30px) saturate(175%);
+    backdrop-filter: blur(30px) saturate(175%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        inset 0 0 0 1px rgba(207, 235, 255, 0.12),
+        0 24px 54px rgba(31, 85, 135, 0.2),
+        0 0 34px rgba(79, 143, 240, 0.12);
+}
+
+[data-theme="light"] .workspace-card.active .workspace-card-top,
+[data-theme="light"] .workspace-card.active .workspace-card-subtitle,
+[data-theme="light"] .workspace-card.active .workspace-card-state {
+    color: rgba(255, 255, 255, 0.86);
+}
+
+[data-theme="light"] .workspace-card.active .workspace-card-value {
+    color: #f7fcff;
+    background: linear-gradient(92deg, #ffffff 6%, #e7f4ff 62%, #cceeff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 1px 2px rgba(4, 34, 65, 0.24));
 }
 
 @media (max-width: 768px) {

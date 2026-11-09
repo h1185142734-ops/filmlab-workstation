@@ -1934,7 +1934,7 @@ function setRecordSectionExpanded(card, expanded) {
 
 function openRecordSection(card) {
     const form = document.getElementById('recordForm');
-    if (!form || !card) return;
+    if (!form) return;
     form.querySelectorAll(':scope > .form-card.collapsible-form-card').forEach(item => {
         setRecordSectionExpanded(item, item === card);
     });
