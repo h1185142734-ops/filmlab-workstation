@@ -490,6 +490,14 @@ function generateId() {
     return 'FL' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
 }
 
+function getLocalDateInputValue(date = new Date()) {
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+    ].join('-');
+}
+
 function formatDate(dateStr) {
     if (!dateStr) return '--';
     const d = new Date(dateStr);
@@ -2988,6 +2996,9 @@ async function exportBackup() {
     const profile = getProfile();
     const settings = getSettings();
     const timers = loadData(STORAGE_KEYS.timers) || [];
+    const customProcesses = getCustomProcesses();
+    const notifications = getNotifications();
+    const filterTemplates = loadData(STORAGE_KEYS.filterTemplates) || [];
 
     // 收集 IndexedDB 中的所有图片
     const imageKeys = await dbGetAllKeys(IMG_STORE);
@@ -3001,6 +3012,7 @@ async function exportBackup() {
 
     const backup = {
         records, inventory, recipes, profile, settings, timers,
+        customProcesses, notifications, filterTemplates,
         images,
         exportDate: new Date().toISOString(),
         version: 2, // v2 = IndexedDB 图片分离存储
@@ -3009,7 +3021,7 @@ async function exportBackup() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `filmlab-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `filmlab-backup-${getLocalDateInputValue()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast(`备份已导出（含 ${imageKeys.length} 张图片）`, 'success');
@@ -3034,6 +3046,7 @@ function importBackup() {
                 if (backup.recipes) saveData(STORAGE_KEYS.recipes, backup.recipes);
                 if (backup.profile) saveData(STORAGE_KEYS.profile, backup.profile);
                 if (backup.timers) saveData(STORAGE_KEYS.timers, backup.timers);
+                if (backup.filterTemplates) saveData(STORAGE_KEYS.filterTemplates, backup.filterTemplates);
                 // 恢复图片到 IndexedDB
                 if (backup.images) {
                     let imgCount = 0;
@@ -3140,7 +3153,7 @@ function exportRecordsToCSV(records) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `filmlab-records-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `filmlab-records-${getLocalDateInputValue()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast(`已导出 ${records.length} 条记录`, 'success');
@@ -3696,7 +3709,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateAutoNotifications();
 
     // 设置今日日期为默认冲洗日期
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateInputValue();
     const dateInput = document.getElementById('recDate');
     if (dateInput && !dateInput.value) dateInput.value = today;
 
@@ -4023,18 +4036,18 @@ function openAvatarModal() {
             </button>
         </div>
         <div class="modal-body avatar-custom-modal">
-            <div class="avatar-preview" id="avatarPreview" style="background:linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 30)} 100%);">${previewContent}</div>
+            <div class="avatar-preview" id="avatarPreview" title="点击选择头像图片" onclick="document.getElementById('avatarImageInput').click()" style="background:linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 30)} 100%);">${previewContent}</div>
             <div class="form-field" style="margin-bottom:12px;">
                 <label>头像文字（1-3个字符）</label>
                 <input type="text" id="avatarTextInput" value="${text}" maxlength="3" oninput="updateAvatarPreview()" style="text-align:center;">
             </div>
             <label style="font-size:11px; font-weight:600; color:var(--text-tertiary);">选择配色</label>
             <div class="avatar-color-grid" id="avatarColorGrid">
-                ${AVATAR_COLORS.map(c => `<div class="avatar-color-option ${c === color ? 'selected' : ''}" style="background:${c}" onclick="selectAvatarColor('${c}')"></div>`).join('')}
+                ${AVATAR_COLORS.map(c => `<div class="avatar-color-option ${c === color ? 'selected' : ''}" style="background:${c}" onclick="selectAvatarColor('${c}', this)"></div>`).join('')}
             </div>
             <div class="form-field" style="margin-top:12px;">
                 <label>或上传头像图片</label>
-                <input type="file" accept="image/*" onchange="uploadAvatarImage(event)" style="padding:6px;">
+                <input type="file" id="avatarImageInput" accept="image/*" onchange="uploadAvatarImage(event)" style="padding:6px;">
             </div>
         </div>
         <div class="modal-footer">
@@ -4057,14 +4070,15 @@ function updateAvatarPreview() {
     appState._avatarText = text;
 }
 
-function selectAvatarColor(color) {
+function selectAvatarColor(color, selectedOption) {
     appState._avatarColor = color;
     appState._avatarImage = null;
     const preview = document.getElementById('avatarPreview');
     preview.textContent = appState._avatarText || 'FL';
     preview.style.background = `linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 30)} 100%)`;
     document.querySelectorAll('.avatar-color-option').forEach(o => o.classList.remove('selected'));
-    event.target.classList.add('selected');
+    const target = selectedOption || document.querySelector(`.avatar-color-option[style*="${color}"]`);
+    target?.classList.add('selected');
 }
 
 async function uploadAvatarImage(event) {
@@ -4852,7 +4866,7 @@ function importRecipeToInventory(recipeId) {
         batch: '',
         ratio: recipe.materials.map(m => `${m.name}:${m.ratio}`).join(', '),
         volume: '',
-        prepDate: new Date().toISOString().slice(0, 10),
+        prepDate: getLocalDateInputValue(),
         expiry: '',
         useCount: 0,
         status: '全新',

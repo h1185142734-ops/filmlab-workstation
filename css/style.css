@@ -7501,6 +7501,32 @@ body::after {
 }
 
 @media (max-width: 768px) {
+    .filter-item input,
+    .filter-item select,
+    .sort-control select,
+    .cleaning-add input,
+    .cleaning-add button {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .checkbox-item {
+        min-height: 44px;
+    }
+
+    .checkbox-item input {
+        width: 18px;
+        height: 18px;
+    }
+
+    .notif-actions button {
+        width: 44px;
+        height: 44px;
+        display: inline-grid;
+        place-items: center;
+        padding: 0;
+    }
+
     .collapsible-form-card > .form-card-header {
         align-items: center;
     }

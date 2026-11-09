@@ -12,7 +12,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="css/style.css?v=20">
+    <link rel="stylesheet" href="css/style.css?v=21">
     <script src="vendor/chart.umd.min.js"></script>
 </head>
 <body>
@@ -936,16 +936,16 @@
                     <div class="settings-item">
                         <div>
                             <span class="settings-label">数据仅本人可见</span>
-                            <span class="settings-desc">所有冲洗记录、物料数据仅个人账号可见，无公开分享入口</span>
+                            <span class="settings-desc">记录、图片与物料数据只保存在当前浏览器，不会上传服务器</span>
                         </div>
                         <div class="badge badge-locked">已锁定</div>
                     </div>
                     <div class="settings-item">
                         <div>
-                            <span class="settings-label">数据加密存储</span>
-                            <span class="settings-desc">本地数据加密保护，防止数据泄露</span>
+                            <span class="settings-label">本地存储</span>
+                            <span class="settings-desc">清除浏览器数据会移除记录，请定期导出备份</span>
                         </div>
-                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                        <div class="badge badge-locked">本机</div>
                     </div>
                 </div>
 
@@ -1172,6 +1172,6 @@
     <!-- ============ Toast提示 ============ -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="js/app.js?v=20"></script>
+    <script src="js/app.js?v=21"></script>
 </body>
 </html>
