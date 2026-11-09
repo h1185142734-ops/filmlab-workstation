@@ -4005,7 +4005,7 @@ function setTheme(theme) {
 // ★ 背景色/强调色/玻璃透明度 自定义
 // ============================================
 const ACCENT_COLORS = [
-    { name: '安全灯', value: '#c08d56' },
+    { name: '界面蓝', value: '#207cff' },
     { name: '显影青', value: '#78a39b' },
     { name: '停显蓝', value: '#7c94a8' },
     { name: '暗房红', value: '#b46d5d' },
@@ -4013,8 +4013,8 @@ const ACCENT_COLORS = [
     { name: '定影灰', value: '#8b887d' },
 ];
 
+const ACCENT_PALETTE_VERSION = '2';
 const LEGACY_ACCENT_COLORS = {
-    '#207cff': '#7c94a8',
     '#00b4d8': '#78a39b',
     '#7209b7': '#8b887d',
     '#e63946': '#b46d5d',
@@ -4040,6 +4040,13 @@ function initColorPickers() {
 
     // 强调色
     const accentPicker = document.getElementById('accentColorPicker');
+    if (settings.accentPaletteVersion !== ACCENT_PALETTE_VERSION) {
+        if (settings.accentColor === '#c08d56' || settings.accentColor === '#7c94a8') {
+            settings.accentColor = '#207cff';
+        }
+        settings.accentPaletteVersion = ACCENT_PALETTE_VERSION;
+        saveData(STORAGE_KEYS.settings, settings);
+    }
     if (settings.accentColor && LEGACY_ACCENT_COLORS[settings.accentColor]) {
         settings.accentColor = LEGACY_ACCENT_COLORS[settings.accentColor];
         saveData(STORAGE_KEYS.settings, settings);
@@ -4095,6 +4102,7 @@ function setAccentColor(color) {
     document.documentElement.style.setProperty('--ice-blue-softer', color + '0D');
     const settings = getSettings();
     settings.accentColor = color;
+    settings.accentPaletteVersion = ACCENT_PALETTE_VERSION;
     saveData(STORAGE_KEYS.settings, settings);
     initColorPickers();
     toast('强调色已更新', 'success');
