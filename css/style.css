@@ -7132,6 +7132,99 @@ body::after {
     .workspace-card.active .workspace-card-value {
         filter: drop-shadow(0 0 12px rgba(80, 159, 234, 0.14));
     }
+
+    .notif-tabs {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        flex-wrap: wrap;
+        overflow: visible;
+    }
+
+    .notif-tab {
+        min-height: 40px;
+    }
+
+    .notif-toolbar > div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .btn-sm,
+    .settings-select,
+    .chart-tab,
+    .chart-header select {
+        min-height: 40px;
+    }
+
+    .btn-text {
+        display: inline-flex;
+        min-height: 40px;
+        align-items: center;
+        padding-inline: 4px;
+    }
+
+    .charts-grid,
+    .chart-card,
+    .chart-body {
+        min-width: 0;
+    }
+
+    .chart-card {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .chart-body canvas {
+        max-width: 100% !important;
+    }
+
+    .glass-opacity-slider {
+        height: 40px;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .glass-opacity-slider::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--glass-input);
+    }
+
+    .glass-opacity-slider::-moz-range-track {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--glass-input);
+    }
+
+    .glass-opacity-slider::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+        margin-top: -8px;
+    }
+
+    .glass-opacity-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.color-swatch {
+    padding: 0;
+    appearance: none;
+    border-radius: 50%;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.34),
+        0 5px 14px rgba(0, 0, 0, 0.17);
+}
+
+.color-swatch.selected {
+    border-color: rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 0 0 2px var(--ice-blue),
+        0 0 0 4px var(--glass-heavy),
+        0 7px 18px var(--ice-blue-glow-strong);
 }
 
 @media (max-width: 360px) {

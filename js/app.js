@@ -2705,8 +2705,11 @@ function renderNotifications() {
 
 function filterNotifications(filter) {
     appState.currentNotifFilter = filter;
-    document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`.notif-tab[data-filter="${filter}"]`).classList.add('active');
+    document.querySelectorAll('.notif-tab').forEach(t => {
+        const active = t.dataset.filter === filter;
+        t.classList.toggle('active', active);
+        t.setAttribute('aria-pressed', String(active));
+    });
     renderNotifications();
 }
 
@@ -3667,6 +3670,8 @@ function setTheme(theme) {
     }
     const sel = document.getElementById('settingTheme');
     if (sel) sel.value = theme;
+    const opacitySlider = document.getElementById('glassOpacitySlider');
+    if (opacitySlider) applyGlassOpacity(opacitySlider.value);
     const settings = getSettings();
     settings.theme = theme;
     saveData(STORAGE_KEYS.settings, settings);
@@ -3675,9 +3680,16 @@ function setTheme(theme) {
 // ============================================
 // ★ 背景色/强调色/玻璃透明度 自定义
 // ============================================
+const DEFAULT_ACCENT_COLOR = '#4f8ff0';
 const ACCENT_COLORS = [
-    '#207cff', '#00b4d8', '#7209b7', '#e63946',
-    '#06d6a0', '#ffd60a', '#f72585', '#3a86ff',
+    { name: '矿石蓝', value: '#4f8ff0' },
+    { name: '经典蓝', value: '#207cff' },
+    { name: '湖水青', value: '#00b4d8' },
+    { name: '药水绿', value: '#06d6a0' },
+    { name: '暗房紫', value: '#7209b7' },
+    { name: '洋红', value: '#f72585' },
+    { name: '信号红', value: '#e63946' },
+    { name: '琥珀黄', value: '#ffd60a' },
 ];
 
 const BG_COLORS = [
@@ -3697,8 +3709,9 @@ function initColorPickers() {
     // 强调色
     const accentPicker = document.getElementById('accentColorPicker');
     if (accentPicker) {
+        const activeAccent = (settings.accentColor || DEFAULT_ACCENT_COLOR).toLowerCase();
         accentPicker.innerHTML = ACCENT_COLORS.map(c =>
-            `<div class="color-swatch ${settings.accentColor === c ? 'selected' : ''}" style="background:${c}" onclick="setAccentColor('${c}')"></div>`
+            `<button type="button" class="color-swatch ${activeAccent === c.value.toLowerCase() ? 'selected' : ''}" style="background:${c.value}" title="${c.name}" aria-label="选择${c.name}强调色" aria-pressed="${activeAccent === c.value.toLowerCase()}" onclick="setAccentColor('${c.value}')"></button>`
         ).join('');
     }
     // 应用已保存的强调色
@@ -3758,10 +3771,17 @@ function setBgColor(color) {
     toast('背景色已更新', 'success');
 }
 
-function setGlassOpacity(value) {
+function applyGlassOpacity(value) {
     const opacity = value / 100;
-    document.documentElement.style.setProperty('--glass-heavy', `rgba(22, 28, 42, ${opacity})`);
-    document.documentElement.style.setProperty('--glass-heavy-hover', `rgba(28, 36, 54, ${opacity + 0.1})`);
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const glassRgb = isLight ? '255, 255, 255' : '22, 28, 42';
+    const hoverRgb = isLight ? '255, 255, 255' : '28, 36, 54';
+    document.documentElement.style.setProperty('--glass-heavy', `rgba(${glassRgb}, ${opacity})`);
+    document.documentElement.style.setProperty('--glass-heavy-hover', `rgba(${hoverRgb}, ${opacity + 0.1})`);
+}
+
+function setGlassOpacity(value) {
+    applyGlassOpacity(value);
     const settings = getSettings();
     settings.glassOpacity = value;
     saveData(STORAGE_KEYS.settings, settings);

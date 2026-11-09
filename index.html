@@ -12,7 +12,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="css/style.css?v=14">
+    <link rel="stylesheet" href="css/style.css?v=17">
     <script src="vendor/chart.umd.min.js"></script>
 </head>
 <body>
@@ -728,11 +728,11 @@
                 </div>
             </div>
             <div class="gallery-nav" id="galleryNav" style="display:none;">
-                <button class="gallery-nav-btn" onclick="galleryPrev()">
+                <button type="button" class="gallery-nav-btn" onclick="galleryPrev()" aria-label="上一张成片">
                     <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
                 <span class="gallery-nav-info" id="galleryInfo">1 / 1</span>
-                <button class="gallery-nav-btn" onclick="galleryNext()">
+                <button type="button" class="gallery-nav-btn" onclick="galleryNext()" aria-label="下一张成片">
                     <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
             </div>
@@ -825,13 +825,13 @@
 
             <div class="notif-toolbar">
                 <div class="notif-tabs">
-                    <button class="notif-tab active" data-filter="all" onclick="filterNotifications('all')">全部</button>
-                    <button class="notif-tab" data-filter="unread" onclick="filterNotifications('unread')">未读</button>
-                    <button class="notif-tab" data-filter="chemical" onclick="filterNotifications('chemical')">药水提醒</button>
-                    <button class="notif-tab" data-filter="equipment" onclick="filterNotifications('equipment')">设备保养</button>
-                    <button class="notif-tab" data-filter="review" onclick="filterNotifications('review')">复盘提醒</button>
-                    <button class="notif-tab" data-filter="cleaning" onclick="filterNotifications('cleaning')">清洗提醒</button>
-                    <button class="notif-tab" data-filter="stock" onclick="filterNotifications('stock')">库存预警</button>
+                    <button type="button" class="notif-tab active" data-filter="all" aria-pressed="true" onclick="filterNotifications('all')">全部</button>
+                    <button type="button" class="notif-tab" data-filter="unread" aria-pressed="false" onclick="filterNotifications('unread')">未读</button>
+                    <button type="button" class="notif-tab" data-filter="chemical" aria-pressed="false" onclick="filterNotifications('chemical')">药水提醒</button>
+                    <button type="button" class="notif-tab" data-filter="equipment" aria-pressed="false" onclick="filterNotifications('equipment')">设备保养</button>
+                    <button type="button" class="notif-tab" data-filter="review" aria-pressed="false" onclick="filterNotifications('review')">复盘提醒</button>
+                    <button type="button" class="notif-tab" data-filter="cleaning" aria-pressed="false" onclick="filterNotifications('cleaning')">清洗提醒</button>
+                    <button type="button" class="notif-tab" data-filter="stock" aria-pressed="false" onclick="filterNotifications('stock')">库存预警</button>
                 </div>
                 <div>
                     <button class="btn btn-sm btn-outline" onclick="markAllRead()">全部已读</button>
@@ -1172,6 +1172,6 @@
     <!-- ============ Toast提示 ============ -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="js/app.js?v=14"></script>
+    <script src="js/app.js?v=17"></script>
 </body>
 </html>
