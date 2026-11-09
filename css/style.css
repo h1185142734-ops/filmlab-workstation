@@ -5634,6 +5634,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     .gallery-card img {
         flex: 1 1 auto;
         min-height: 0;
+        object-fit: contain;
+        background: #05070B;
     }
 
     .gallery-card.center {
