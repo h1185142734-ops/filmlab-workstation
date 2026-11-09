@@ -5757,3 +5757,504 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 [data-theme="light"] .workspace-card.active .workspace-card-title {
     color: #fff;
 }
+
+/* ============================================
+   ★★ Liquid Glass UI 2.0
+   统一移动端层级、材质、触控反馈与页面动效
+   ============================================ */
+:root {
+    --glass-heavy: rgba(15, 22, 36, 0.78);
+    --glass-heavy-hover: rgba(22, 31, 50, 0.88);
+    --glass-light: rgba(8, 13, 24, 0.84);
+    --glass-light-hover: rgba(13, 20, 34, 0.92);
+    --glass-input: rgba(255, 255, 255, 0.045);
+    --border-glass: rgba(255, 255, 255, 0.085);
+    --border-glass-strong: rgba(255, 255, 255, 0.14);
+    --border-fresnel: rgba(109, 181, 255, 0.2);
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+    --radius-2xl: 28px;
+    --transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-liquid: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --shadow-liquid: 0 20px 54px rgba(0, 0, 0, 0.34), 0 3px 12px rgba(0, 0, 0, 0.22);
+}
+
+[data-theme="light"] {
+    --glass-heavy: rgba(255, 255, 255, 0.7);
+    --glass-heavy-hover: rgba(255, 255, 255, 0.86);
+    --glass-light: rgba(244, 247, 253, 0.84);
+    --glass-light-hover: rgba(250, 252, 255, 0.94);
+    --glass-input: rgba(26, 38, 64, 0.045);
+    --border-glass: rgba(37, 55, 86, 0.1);
+    --border-glass-strong: rgba(37, 55, 86, 0.17);
+    --shadow-liquid: 0 18px 46px rgba(45, 61, 91, 0.14), 0 3px 10px rgba(45, 61, 91, 0.08);
+}
+
+html {
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    overscroll-behavior-y: contain;
+}
+
+body::before {
+    background:
+        radial-gradient(ellipse 760px 560px at 18% 0%, rgba(45, 126, 255, 0.12), transparent 62%),
+        radial-gradient(ellipse 620px 480px at 100% 42%, rgba(24, 100, 220, 0.075), transparent 64%),
+        radial-gradient(ellipse 800px 440px at 50% 110%, rgba(8, 49, 113, 0.18), transparent 72%);
+}
+
+.topbar,
+.sidebar,
+.quick-bar,
+.mobile-menu-sheet,
+.modal,
+.timer-panel {
+    background-color: var(--glass-light);
+    background-image:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.09), transparent 34%),
+        linear-gradient(320deg, rgba(32, 124, 255, 0.07), transparent 48%);
+    border-color: var(--border-glass);
+}
+
+.topbar {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.055), 0 12px 34px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.topbar::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: -22px;
+    left: 0;
+    height: 22px;
+    background: linear-gradient(rgba(3, 7, 14, 0.32), transparent);
+    pointer-events: none;
+}
+
+.topbar.is-scrolled {
+    background-color: rgba(6, 10, 18, 0.94);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.07), 0 18px 44px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .topbar.is-scrolled {
+    background-color: rgba(244, 247, 253, 0.96);
+}
+
+.topbar-menu-toggle,
+.topbar-btn,
+.theme-toggle,
+.topbar-avatar {
+    border: 1px solid var(--border-glass);
+    background: rgba(255, 255, 255, 0.035);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.topbar-menu-toggle,
+.topbar-btn,
+.theme-toggle {
+    transition: transform 0.2s var(--ease-spring), background-color 0.24s ease, border-color 0.24s ease, color 0.24s ease;
+}
+
+.topbar-menu-toggle:active,
+.topbar-btn:active,
+.theme-toggle:active {
+    transform: scale(0.9);
+    background: var(--ice-blue-soft);
+}
+
+.sidebar {
+    background-color: rgba(8, 13, 23, 0.94);
+    box-shadow: 24px 0 60px rgba(0, 0, 0, 0.34);
+}
+
+[data-theme="light"] .sidebar {
+    background-color: rgba(244, 247, 253, 0.97);
+}
+
+[data-theme="light"] .empty-state {
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(32, 124, 255, 0.07), transparent 68%),
+        rgba(255, 255, 255, 0.36);
+}
+
+[data-theme="light"] .quick-bar {
+    background-color: rgba(244, 247, 253, 0.94);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 18px 46px rgba(52, 70, 105, 0.18);
+}
+
+[data-theme="light"] .quick-btn {
+    color: #757d8c;
+}
+
+[data-theme="light"] .quick-btn.active {
+    color: #0d62d9;
+    background: linear-gradient(180deg, rgba(56, 139, 255, 0.16), rgba(32, 124, 255, 0.08));
+}
+
+[data-theme="light"] .toast {
+    color: #1a2233;
+    background-color: rgba(255, 255, 255, 0.97);
+}
+
+.tab-content {
+    animation: none;
+}
+
+.tab-content.active {
+    animation: screenIn 0.42s var(--ease-liquid) both;
+}
+
+@keyframes screenIn {
+    from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.995); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+.page-title {
+    font-size: 25px;
+    line-height: 1.15;
+    letter-spacing: -0.7px;
+    font-weight: 800;
+}
+
+.page-subtitle {
+    color: var(--text-tertiary);
+    line-height: 1.55;
+}
+
+.process-card,
+.form-card,
+.record-card,
+.inv-card,
+.chart-card,
+.settings-card,
+.notif-item,
+.recipe-card,
+.workspace-stage,
+.process-banner,
+.inventory-tabs,
+.notif-tabs,
+.dynamic-row,
+.empty-state {
+    border-color: var(--border-glass);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075), var(--shadow-liquid);
+}
+
+.process-card,
+.form-card,
+.record-card,
+.inv-card,
+.chart-card,
+.settings-card,
+.notif-item,
+.recipe-card {
+    background-color: var(--glass-heavy);
+    background-image:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.07), transparent 30%),
+        linear-gradient(320deg, rgba(32, 124, 255, 0.055), transparent 46%);
+}
+
+.form-card-header {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.form-field label {
+    color: var(--text-secondary);
+    letter-spacing: 0.1px;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea,
+.topbar-search input {
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+    transition: border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus,
+.topbar-search input:focus {
+    border-color: rgba(109, 181, 255, 0.75);
+    background-color: rgba(32, 124, 255, 0.07);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 3px rgba(32, 124, 255, 0.13), 0 0 24px rgba(32, 124, 255, 0.1);
+}
+
+.process-banner {
+    background:
+        radial-gradient(ellipse at 0% 50%, rgba(32, 124, 255, 0.12), transparent 64%),
+        var(--glass-heavy);
+    border: 1px solid rgba(109, 181, 255, 0.2);
+}
+
+.inventory-tabs,
+.notif-tabs {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.inv-tab.active,
+.notif-tab.active {
+    color: var(--ice-blue-bright);
+    background: linear-gradient(180deg, rgba(79, 155, 255, 0.2), rgba(32, 124, 255, 0.09));
+    box-shadow: inset 0 0 0 1px rgba(109, 181, 255, 0.25), 0 5px 16px rgba(0, 0, 0, 0.16);
+}
+
+.btn,
+.new-record-btn,
+.quick-btn,
+.mobile-menu-item,
+.record-card,
+.process-card {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.btn,
+.new-record-btn,
+.mobile-menu-item {
+    transition: transform 0.2s var(--ease-spring), box-shadow 0.28s ease, background-color 0.24s ease, border-color 0.24s ease;
+}
+
+.btn-primary,
+.new-record-btn {
+    background: linear-gradient(145deg, #3b91ff 0%, #207cff 42%, #0a5ddb 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 9px 26px rgba(17, 105, 255, 0.3);
+}
+
+.btn:active,
+.new-record-btn:active,
+.mobile-menu-item:active,
+.record-card:active,
+.process-card:active {
+    transform: translateY(1px) scale(0.975);
+    transition-duration: 0.08s;
+}
+
+button:focus-visible,
+a:focus-visible,
+[onclick]:focus-visible {
+    outline: 2px solid var(--ice-blue-bright);
+    outline-offset: 3px;
+}
+
+.empty-state {
+    min-height: 150px;
+    display: grid;
+    place-items: center;
+    padding: 32px 22px !important;
+    color: var(--text-tertiary);
+    border: 1px dashed rgba(109, 181, 255, 0.16) !important;
+    border-radius: 20px;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(32, 124, 255, 0.08), transparent 68%),
+        rgba(255, 255, 255, 0.018);
+    box-shadow: none !important;
+}
+
+.process-card,
+.record-card,
+.inv-card,
+.chart-card,
+.settings-card,
+.recipe-card,
+.notif-item {
+    animation: surfaceIn 0.48s var(--ease-liquid) both;
+}
+
+.workspace-card:not(.active) .workspace-card-title,
+.workspace-card:not(.active) .workspace-card-subtitle,
+.workspace-card:not(.active) .workspace-card-value,
+.workspace-card:not(.active) .workspace-card-state {
+    opacity: 0.3;
+}
+
+.process-card:nth-child(2),
+.record-card:nth-child(2),
+.inv-card:nth-child(2),
+.chart-card:nth-child(2),
+.settings-card:nth-child(2),
+.recipe-card:nth-child(2),
+.notif-item:nth-child(2) { animation-delay: 0.04s; }
+
+.process-card:nth-child(3),
+.record-card:nth-child(3),
+.inv-card:nth-child(3),
+.chart-card:nth-child(3),
+.settings-card:nth-child(3),
+.recipe-card:nth-child(3),
+.notif-item:nth-child(3) { animation-delay: 0.08s; }
+
+@keyframes surfaceIn {
+    from { opacity: 0; transform: translate3d(0, 9px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@media (max-width: 768px) {
+    .tab-content {
+        padding: 18px 16px calc(var(--quickbar-height) + var(--safe-bottom) + 28px);
+    }
+
+    .page-header,
+    .workspace-heading {
+        margin-bottom: 18px;
+    }
+
+    .page-title {
+        font-size: 26px;
+        letter-spacing: -0.8px;
+    }
+
+    .page-subtitle {
+        margin-top: 3px;
+        font-size: 12.5px;
+    }
+
+    .workspace-heading {
+        display: block;
+    }
+
+    .workspace-heading-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+        width: 100%;
+        margin-top: 14px;
+    }
+
+    .workspace-heading-actions .btn {
+        width: 100%;
+        min-height: 46px;
+        border-radius: 15px;
+    }
+
+    .workspace-stage {
+        min-height: 302px;
+        padding: 14px 12px 8px;
+        border-radius: 26px;
+        background:
+            radial-gradient(ellipse 72% 70% at 50% 58%, rgba(32, 124, 255, 0.15), transparent 70%),
+            linear-gradient(145deg, rgba(255, 255, 255, 0.055), transparent 58%);
+    }
+
+    .workspace-stack {
+        height: 252px;
+    }
+
+    .workspace-card,
+    .workspace-empty-card {
+        border-radius: 24px;
+    }
+
+    .form-card {
+        padding: 18px;
+        border-radius: 22px;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        min-height: 50px;
+        border-radius: 14px;
+    }
+
+    .inventory-tabs {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .inventory-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .inv-tab {
+        flex: 1 0 auto;
+        min-height: 42px;
+    }
+
+    .quick-bar {
+        right: 10px;
+        bottom: calc(8px + var(--safe-bottom));
+        left: 10px;
+        max-width: none;
+        padding: 7px;
+        transform: none;
+        border-radius: 24px;
+        background-color: rgba(11, 17, 29, 0.9);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 18px 46px rgba(0, 0, 0, 0.42);
+    }
+
+    .quick-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 7px 2px 6px;
+        border-radius: 17px;
+        isolation: isolate;
+        transition: transform 0.2s var(--ease-spring), color 0.24s ease, background-color 0.24s ease;
+    }
+
+    .quick-btn svg {
+        transition: transform 0.3s var(--ease-spring), filter 0.3s ease;
+    }
+
+    .quick-btn span {
+        font-size: 10px;
+    }
+
+    .quick-btn.active {
+        color: #9bcaff;
+        background: linear-gradient(180deg, rgba(63, 143, 255, 0.18), rgba(32, 124, 255, 0.08));
+    }
+
+    .quick-btn.active svg {
+        transform: translateY(-1px) scale(1.08);
+        filter: drop-shadow(0 0 8px rgba(75, 155, 255, 0.7));
+    }
+
+    .quick-btn:active {
+        transform: scale(0.92);
+    }
+
+    .toast-container {
+        bottom: calc(var(--quickbar-height) + var(--safe-bottom) + 16px);
+    }
+
+    .toast {
+        border-radius: 17px;
+        background-color: rgba(14, 22, 37, 0.96);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 14px 34px rgba(0, 0, 0, 0.32);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab-content.active,
+    .process-card,
+    .record-card,
+    .inv-card,
+    .chart-card,
+    .settings-card,
+    .recipe-card,
+    .notif-item {
+        animation: none !important;
+    }
+
+    .btn,
+    .new-record-btn,
+    .quick-btn,
+    .topbar-btn,
+    .topbar-menu-toggle,
+    .theme-toggle,
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        transition-duration: 0.01ms !important;
+    }
+}

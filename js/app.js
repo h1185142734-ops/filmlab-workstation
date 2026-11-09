@@ -700,6 +700,13 @@ function renderSidebarStats() {
 // 移动端侧边栏
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
+    const topbar = document.querySelector('.topbar');
+    const syncTopbarSurface = () => {
+        topbar?.classList.toggle('is-scrolled', window.scrollY > 8);
+    };
+    syncTopbarSurface();
+    window.addEventListener('scroll', syncTopbarSurface, { passive: true });
+
     document.getElementById('menuToggle')?.addEventListener('click', () => {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('mobileOverlay');
