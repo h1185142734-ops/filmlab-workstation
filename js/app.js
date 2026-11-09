@@ -278,6 +278,37 @@ function compressImage(dataUrl, maxWidth = 1200, quality = 0.75) {
     });
 }
 
+// 头像使用中心方形裁切，避免长图被压成大体积数据并在圆形头像中变形。
+function compressAvatarImage(dataUrl, size = 256, quality = 0.82) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const sourceSize = Math.min(img.naturalWidth, img.naturalHeight);
+                if (!sourceSize) {
+                    resolve(dataUrl);
+                    return;
+                }
+                const sourceX = Math.max(0, (img.naturalWidth - sourceSize) / 2);
+                const sourceY = Math.max(0, (img.naturalHeight - sourceSize) / 2);
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, size, size);
+                ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            } catch (error) {
+                console.error('Avatar compression failed:', error);
+                resolve(dataUrl);
+            }
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+    });
+}
+
 function genImgId() {
     return 'img_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
 }
@@ -3932,7 +3963,7 @@ const AVATAR_COLORS = [
 ];
 
 function getProfile() { return loadData(STORAGE_KEYS.profile) || {}; }
-function saveProfile(profile) { saveData(STORAGE_KEYS.profile, profile); }
+function saveProfile(profile) { return saveData(STORAGE_KEYS.profile, profile); }
 
 function initProfile() {
     const profile = getProfile();
@@ -3981,6 +4012,9 @@ function openAvatarModal() {
     const profile = getProfile();
     const text = profile.avatarText || 'FL';
     const color = profile.avatarColor || '#207cff';
+    const previewContent = profile.avatarImage
+        ? `<img src="${profile.avatarImage}" alt="avatar">`
+        : text;
     openModal(`
         <div class="modal-header">
             <span class="modal-title">头像设置</span>
@@ -3989,7 +4023,7 @@ function openAvatarModal() {
             </button>
         </div>
         <div class="modal-body avatar-custom-modal">
-            <div class="avatar-preview" id="avatarPreview" style="background:linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 30)} 100%);">${text}</div>
+            <div class="avatar-preview" id="avatarPreview" style="background:linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 30)} 100%);">${previewContent}</div>
             <div class="form-field" style="margin-bottom:12px;">
                 <label>头像文字（1-3个字符）</label>
                 <input type="text" id="avatarTextInput" value="${text}" maxlength="3" oninput="updateAvatarPreview()" style="text-align:center;">
@@ -4010,18 +4044,24 @@ function openAvatarModal() {
     `);
     appState._avatarColor = color;
     appState._avatarText = text;
+    appState._avatarImage = profile.avatarImage || null;
 }
 
 function updateAvatarPreview() {
     const text = document.getElementById('avatarTextInput').value || 'FL';
     const preview = document.getElementById('avatarPreview');
+    const color = appState._avatarColor || '#207cff';
     preview.textContent = text;
+    preview.style.background = `linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 30)} 100%)`;
+    appState._avatarImage = null;
     appState._avatarText = text;
 }
 
 function selectAvatarColor(color) {
     appState._avatarColor = color;
+    appState._avatarImage = null;
     const preview = document.getElementById('avatarPreview');
+    preview.textContent = appState._avatarText || 'FL';
     preview.style.background = `linear-gradient(135deg, ${color} 0%, ${darkenColor(color, 30)} 100%)`;
     document.querySelectorAll('.avatar-color-option').forEach(o => o.classList.remove('selected'));
     event.target.classList.add('selected');
@@ -4030,13 +4070,22 @@ function selectAvatarColor(color) {
 async function uploadAvatarImage(event) {
     const file = event.target.files[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+        toast('请选择图片文件', 'error');
+        event.target.value = '';
+        return;
+    }
     const reader = new FileReader();
     reader.onload = async (e) => {
-        // 压缩头像到 200x200，质量 0.8
-        const compressed = await compressImage(e.target.result, 200, 0.8);
+        const compressed = await compressAvatarImage(e.target.result, 256, 0.82);
         appState._avatarImage = compressed;
         const preview = document.getElementById('avatarPreview');
         preview.innerHTML = `<img src="${compressed}" alt="avatar">`;
+        event.target.value = '';
+    };
+    reader.onerror = () => {
+        event.target.value = '';
+        toast('头像图片读取失败，请重新选择', 'error');
     };
     reader.readAsDataURL(file);
 }
@@ -4047,7 +4096,10 @@ function saveAvatar() {
     profile.avatarColor = appState._avatarColor || '#207cff';
     if (appState._avatarImage) profile.avatarImage = appState._avatarImage;
     else delete profile.avatarImage;
-    saveProfile(profile);
+    if (!saveProfile(profile)) {
+        toast('头像保存失败，请检查存储空间', 'error');
+        return;
+    }
     updateAvatarDisplay(profile);
     closeModal();
     appState._avatarImage = null;

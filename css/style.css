@@ -269,6 +269,15 @@ body::before {
     box-shadow: 0 0 12px var(--ice-blue-glow);
     cursor: pointer;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.topbar-avatar img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
 }
 
 /* ============================================
