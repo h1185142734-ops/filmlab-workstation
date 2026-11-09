@@ -701,8 +701,10 @@ function renderSidebarStats() {
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('menuToggle')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.add('open');
-        document.getElementById('mobileOverlay').style.display = 'block';
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        const isOpen = sidebar.classList.toggle('open');
+        overlay.style.display = isOpen ? 'block' : 'none';
     });
 
     document.getElementById('sidebarClose')?.addEventListener('click', () => {

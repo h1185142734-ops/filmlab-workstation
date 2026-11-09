@@ -1,9 +1,9 @@
-const CACHE_NAME = 'filmlab-shell-v5';
+const CACHE_NAME = 'filmlab-shell-v6';
 const APP_SHELL = [
     './',
     './index.html',
-    './css/style.css?v=4',
-    './js/app.js',
+    './css/style.css?v=5',
+    './js/app.js?v=5',
     './vendor/chart.umd.min.js',
     './manifest.webmanifest',
     './icons/icon-192.png',

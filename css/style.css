@@ -2251,6 +2251,7 @@ body::before {
         width: 280px;
         max-width: 80vw;
         box-shadow: var(--shadow-float);
+        z-index: 89;
     }
 
     .sidebar.open { transform: translateX(0); }
