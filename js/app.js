@@ -186,6 +186,7 @@ let appState = {
     charts: {},
     chartFreqMode: 'month',
     workspaceSelection: null,
+    processFilter: 'all',
 };
 
 // ============================================
@@ -563,6 +564,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // 标签页导航
 // ============================================
 function switchTab(tabName) {
+    const tabOrder = ['process-select', 'new-record', 'record-list', 'inventory', 'gallery', 'recipes', 'charts', 'notifications', 'settings'];
+    const previousIndex = tabOrder.indexOf(appState.currentTab);
+    const nextIndex = tabOrder.indexOf(tabName);
+    const direction = previousIndex === -1 || nextIndex === -1 || nextIndex === previousIndex
+        ? 'neutral'
+        : nextIndex > previousIndex ? 'forward' : 'back';
+    document.documentElement.dataset.navDirection = direction;
+    document.querySelector('.topbar-search')?.classList.remove('search-open');
+
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.querySelectorAll('.quick-btn').forEach(n => n.classList.remove('active'));
@@ -581,6 +591,7 @@ function switchTab(tabName) {
     }
 
     appState.currentTab = tabName;
+    document.body.dataset.currentTab = tabName;
 
     // 刷新侧边栏统计
     renderSidebarStats();
@@ -626,6 +637,11 @@ function switchTab(tabName) {
     if (tabName === 'settings') {
         showStorageUsage();
     }
+
+    requestAnimationFrame(() => {
+        syncBottomNavLiquid();
+        syncSegmentIndicators();
+    });
 }
 
 // ============================================
@@ -724,24 +740,157 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('mobileOverlay').style.display = 'none';
     });
 
-    // 全局搜索
-    document.getElementById('globalSearch')?.addEventListener('input', (e) => {
-        switchTab('record-list');
-        document.getElementById('filterKeyword').value = e.target.value;
-        renderRecordList();
-        e.target.value = '';
-    });
+    initGlobalSearch();
 });
+
+function initGlobalSearch() {
+    const search = document.getElementById('globalSearch');
+    const wrapper = search?.closest('.topbar-search');
+    if (!search || !wrapper) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'global-search-panel';
+    panel.innerHTML = '<div class="global-search-empty">输入胶卷、批次编号或药水名称</div>';
+    wrapper.appendChild(panel);
+
+    const render = () => {
+        const query = search.value.trim();
+        const matches = findGlobalSearchMatches(query);
+        const status = document.getElementById('globalSearchStatus');
+        if (status) status.textContent = query ? `${matches.length} 命中` : 'SEARCH';
+        wrapper.classList.add('search-open');
+        panel.innerHTML = query
+            ? (matches.length
+                ? matches.map(item => `
+                    <button class="global-search-result" type="button" data-search-kind="${escapeHtml(item.kind)}" data-search-id="${escapeHtml(item.id)}" data-search-tab="${escapeHtml(item.tab || '')}">
+                        <span class="global-search-result-type">${escapeHtml(item.type)}</span>
+                        <span class="global-search-result-copy">
+                            <strong>${escapeHtml(item.title)}</strong>
+                            <small>${escapeHtml(item.meta)}</small>
+                        </span>
+                        <span class="global-search-result-arrow">↗</span>
+                    </button>`).join('')
+                : '<div class="global-search-empty">没有匹配的胶片、批次或药水</div>')
+            : '<div class="global-search-empty">输入关键词即可跨模块查找</div>';
+        panel.querySelectorAll('.global-search-result').forEach(result => {
+            result.addEventListener('click', () => openGlobalSearchResult(
+                result.dataset.searchKind,
+                result.dataset.searchId,
+                result.dataset.searchTab
+            ));
+        });
+    };
+
+    search.addEventListener('focus', render);
+    search.addEventListener('input', render);
+    search.addEventListener('blur', () => {
+        setTimeout(() => {
+            if (!wrapper.contains(document.activeElement)) wrapper.classList.remove('search-open');
+        }, 120);
+    });
+    search.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            wrapper.classList.remove('search-open');
+            search.blur();
+        }
+        if (event.key === 'Enter') {
+            const first = panel.querySelector('.global-search-result');
+            if (first) {
+                event.preventDefault();
+                first.click();
+            } else if (search.value.trim()) {
+                document.getElementById('filterKeyword').value = search.value.trim();
+                wrapper.classList.remove('search-open');
+                switchTab('record-list');
+            }
+        }
+    });
+
+    document.addEventListener('click', event => {
+        if (!wrapper.contains(event.target)) wrapper.classList.remove('search-open');
+    });
+    document.addEventListener('keydown', event => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+            event.preventDefault();
+            search.focus();
+        }
+    });
+}
+
+function findGlobalSearchMatches(rawQuery) {
+    const query = rawQuery.toLowerCase();
+    if (!query) return [];
+    const records = getAllRecords()
+        .filter(record => [
+            record.name,
+            record.film?.brand,
+            record.film?.model,
+            record.film?.batch,
+            record.notes,
+            getProcessName(record.processType),
+        ].some(value => String(value || '').toLowerCase().includes(query)))
+        .map(record => ({
+            kind: 'record',
+            id: record.id,
+            type: 'BATCH',
+            title: record.name || '未命名批次',
+            meta: `${getProcessName(record.processType)} · ${formatDate(record.date)}`,
+        }));
+
+    const inventory = getAllInventory();
+    const inventoryGroups = [
+        { tab: 'film', label: 'FILM', rows: inventory.film || [] },
+        { tab: 'chemical', label: 'CHEM', rows: inventory.chemical || [] },
+        { tab: 'equipment', label: 'GEAR', rows: inventory.equipment || [] },
+    ];
+    const items = inventoryGroups.flatMap(group => group.rows)
+        .filter(item => [item.name, item.brand, item.model, item.type, item.batch]
+            .some(value => String(value || '').toLowerCase().includes(query)))
+        .map(item => {
+            const group = inventoryGroups.find(entry => entry.rows.includes(item));
+            const title = [item.brand, item.name || item.model || item.type].filter(Boolean).join(' ') || '未命名物料';
+            return {
+                kind: 'inventory',
+                id: item.id || '',
+                tab: group?.tab || 'film',
+                type: group?.label || 'ITEM',
+                title,
+                meta: [item.type, item.batch, item.quantity != null ? `库存 ${item.quantity}` : ''].filter(Boolean).join(' · ') || '物料库存',
+            };
+        });
+
+    return [...records, ...items].slice(0, 8);
+}
+
+function openGlobalSearchResult(kind, id, tab) {
+    document.querySelector('.topbar-search')?.classList.remove('search-open');
+    document.getElementById('globalSearch')?.blur();
+    if (kind === 'record') {
+        viewRecord(id);
+        return;
+    }
+    switchTab('inventory');
+    switchInvTab(tab || 'film');
+}
 
 // ============================================
 // 标签页1：冲洗方案选择
 // ============================================
 function renderProcessGrid() {
     const grid = document.getElementById('processGrid');
-    grid.innerHTML = PRESET_PROCESSES.map(p => `
+    const visibleProcesses = PRESET_PROCESSES.filter(process => {
+        if (appState.processFilter === 'bw') return process.tags.includes('黑白');
+        if (appState.processFilter === 'color') return process.tags.includes('彩色');
+        return true;
+    });
+
+    grid.innerHTML = visibleProcesses.map(p => `
         <div class="process-card ${appState.selectedProcess === p.id ? 'selected' : ''}"
+             data-process-id="${p.id}"
+             role="button"
+             tabindex="0"
              onclick="selectProcess('${p.id}')">
-            <div class="process-card-icon">${PROCESS_ICONS[p.icon] || PROCESS_ICONS.custom}</div>
+            <div class="process-card-icon">${PROCESS_ICONS[p.id] || PROCESS_ICONS.custom}</div>
             <div class="process-card-title">${p.name}</div>
             <div class="process-card-desc">${p.desc}</div>
             <div class="process-card-tags">
@@ -749,6 +898,34 @@ function renderProcessGrid() {
             </div>
         </div>
     `).join('');
+
+    grid.querySelectorAll('.process-card').forEach(card => {
+        card.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                card.click();
+            }
+        });
+    });
+
+    const countFor = filter => PRESET_PROCESSES.filter(process =>
+        filter === 'all' || process.tags.includes(filter === 'bw' ? '黑白' : '彩色')
+    ).length;
+    document.querySelectorAll('[data-process-filter-count]').forEach(label => {
+        label.textContent = String(countFor(label.dataset.processFilterCount)).padStart(2, '0');
+    });
+    document.querySelectorAll('.process-filter-chip').forEach(button => {
+        const active = button.dataset.processFilter === appState.processFilter;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
+    const count = document.getElementById('processFilterCount');
+    if (count) count.textContent = `${String(visibleProcesses.length).padStart(2, '0')} TECHNIQUES`;
+}
+
+function setProcessFilter(filter) {
+    appState.processFilter = ['all', 'bw', 'color'].includes(filter) ? filter : 'all';
+    renderProcessGrid();
 }
 
 function renderCustomProcessList() {
@@ -903,8 +1080,17 @@ function renderWorkspaceInspector(selection) {
                 </span>
             </div>
             <div class="workspace-timer-readout" data-workspace-timer-id="${escapeHtml(timer.id)}">
-                <strong data-workspace-live-time>${formatCountdown(timer.remaining)}</strong>
-                <span>剩余时间</span>
+                <div class="workspace-timer-ring" style="--timer-progress:${progress}">
+                    <svg viewBox="0 0 112 112" aria-hidden="true">
+                        <circle class="timer-ring-track" cx="56" cy="56" r="48" pathLength="100"/>
+                        <circle class="timer-ring-value" data-workspace-ring cx="56" cy="56" r="48" pathLength="100" style="stroke-dashoffset:${100 - progress}"/>
+                    </svg>
+                    <span class="timer-ring-center">${Math.round(progress)}<small>%</small></span>
+                </div>
+                <div class="workspace-timer-copy">
+                    <strong data-workspace-live-time>${formatCountdown(timer.remaining)}</strong>
+                    <span>REMAINING / 剩余时间</span>
+                </div>
             </div>
             <div class="workspace-progress"><i data-workspace-progress style="width:${progress}%"></i></div>
             <div class="workspace-detail-grid">
@@ -984,6 +1170,17 @@ function updateWorkspaceLiveDisplays() {
                 ? Math.min(100, Math.max(0, ((timer.totalSeconds - timer.remaining) / timer.totalSeconds) * 100))
                 : 0;
             progress.style.width = `${percent}%`;
+        }
+        const ring = element.querySelector('[data-workspace-ring]');
+        const ringWrap = element.querySelector('.workspace-timer-ring');
+        const ringCenter = element.querySelector('.timer-ring-center');
+        if (ring || ringWrap) {
+            const percent = timer.totalSeconds > 0
+                ? Math.min(100, Math.max(0, ((timer.totalSeconds - timer.remaining) / timer.totalSeconds) * 100))
+                : 0;
+            if (ring) ring.style.strokeDashoffset = String(100 - percent);
+            if (ringWrap) ringWrap.style.setProperty('--timer-progress', percent);
+            if (ringCenter) ringCenter.innerHTML = `${Math.round(percent)}<small>%</small>`;
         }
     });
 }
@@ -2018,7 +2215,8 @@ function editRecord(id) {
 // 标签页3：记录列表
 // ============================================
 function renderRecordList() {
-    let records = getAllRecords();
+    const allRecords = getAllRecords();
+    let records = [...allRecords];
 
     // 应用筛选
     const filterProcess = document.getElementById('filterProcess').value;
@@ -2064,6 +2262,9 @@ function renderRecordList() {
 
     // 更新流程筛选选项
     updateFilterProcessOptions();
+
+    // 筛选标签、结果数量和环形进度共享同一份结果数据
+    updateRecordFilterSignal(allRecords.length, records.length);
 
     // 渲染列表
     const list = document.getElementById('recordList');
@@ -2130,6 +2331,83 @@ function renderRecordList() {
 
     // 更新批量操作栏
     updateBatchBar();
+}
+
+function setRecordFilterChip(filter) {
+    if (filter === 'all') {
+        resetFilters();
+        return;
+    }
+    const review = document.getElementById('filterReview');
+    const rating = document.getElementById('filterRating');
+    review.value = '';
+    rating.value = '';
+
+    if (filter === 'unreviewed') review.value = 'unreviewed';
+    if (filter === 'four-star') rating.value = '4';
+    if (filter === 'rated') rating.value = '1';
+    renderRecordList();
+}
+
+function toggleRefineFilters(forceOpen) {
+    const bar = document.querySelector('#tab-record-list .filter-bar');
+    const trigger = document.getElementById('refineFilterToggle');
+    if (!bar || !trigger) return;
+    const opening = typeof forceOpen === 'boolean'
+        ? forceOpen
+        : !bar.classList.contains('refine-open');
+    bar.classList.toggle('refine-open', opening);
+    trigger.setAttribute('aria-expanded', String(opening));
+    trigger.querySelector('span').textContent = opening ? '⌃' : '⌄';
+}
+
+function updateRecordFilterSignal(total, visible) {
+    const percent = total > 0 ? Math.round((visible / total) * 100) : 0;
+    const ring = document.querySelector('[data-archive-ring]');
+    if (ring) ring.style.strokeDashoffset = String(100 - percent);
+
+    const visibleCount = document.getElementById('archiveVisibleCount');
+    const visibleText = document.getElementById('archiveVisibleCountText');
+    const totalText = document.getElementById('archiveTotalCount');
+    if (visibleCount) visibleCount.textContent = String(visible);
+    if (visibleText) visibleText.textContent = String(visible);
+    if (totalText) totalText.textContent = String(total);
+
+    const filterReview = document.getElementById('filterReview')?.value || '';
+    const filterRating = document.getElementById('filterRating')?.value || '';
+    const hasOtherFilter = Boolean(
+        document.getElementById('filterProcess')?.value ||
+        document.getElementById('filterBrand')?.value ||
+        document.getElementById('filterDateStart')?.value ||
+        document.getElementById('filterDateEnd')?.value ||
+        document.getElementById('filterKeyword')?.value.trim()
+    );
+    const activeFilter = hasOtherFilter
+        ? 'custom'
+        : !filterReview && !filterRating ? 'all'
+            : filterReview === 'unreviewed' && !filterRating ? 'unreviewed'
+                : filterRating === '4' && !filterReview ? 'four-star'
+                    : filterRating === '1' && !filterReview ? 'rated'
+                        : 'custom';
+    document.querySelectorAll('.record-quick-filter').forEach(button => {
+        button.classList.toggle('active', button.dataset.recordFilter === activeFilter);
+    });
+
+    const hasCustomFilter = activeFilter === 'custom';
+    const summary = document.getElementById('archiveFilterSummary');
+    if (summary) {
+        summary.textContent = activeFilter === 'unreviewed'
+            ? '待复盘批次'
+            : activeFilter === 'four-star' ? '四星以上批次'
+                : activeFilter === 'rated' ? '已评分批次'
+                    : hasCustomFilter ? '条件筛选结果' : '全部批次';
+    }
+
+    const refineToggle = document.getElementById('refineFilterToggle');
+    if (refineToggle) refineToggle.classList.toggle('has-active-filter', hasCustomFilter);
+
+    const ringWrap = document.getElementById('archiveFilterRing');
+    if (ringWrap) ringWrap.setAttribute('aria-label', `当前显示 ${visible} 条，共 ${total} 条，${percent}%`);
 }
 
 function updateFilterProcessOptions() {
@@ -2393,6 +2671,7 @@ function switchInvTab(tab) {
     document.querySelector(`.inv-tab[data-inv="${tab}"]`).classList.add('active');
     document.querySelectorAll('.inv-content').forEach(c => c.classList.remove('active'));
     document.getElementById('inv-' + tab).classList.add('active');
+    requestAnimationFrame(syncSegmentIndicators);
 }
 
 function renderInventory() {
@@ -3595,6 +3874,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化按钮涟漪
     initRippleEffect();
 
+    // 初始化联动控件与弹性抽屉
+    initMobileDrawerInteraction();
+    syncBottomNavLiquid();
+    syncSegmentIndicators();
+    window.addEventListener('resize', () => {
+        syncBottomNavLiquid();
+        syncSegmentIndicators();
+    }, { passive: true });
+
     // 迁移旧版 base64 图片到 IndexedDB（异步，不阻塞页面）
     migrateBase64Images().catch(e => console.error('Image migration failed:', e));
 
@@ -3640,8 +3928,11 @@ function toggleMobileMenu() {
     if (sheet.classList.contains('active')) {
         closeMobileMenu();
     } else {
+        sheet.style.removeProperty('--drawer-drag');
         sheet.classList.add('active');
         overlay.classList.add('active');
+        document.getElementById('quickBar')?.classList.add('drawer-open');
+        requestAnimationFrame(syncBottomNavLiquid);
     }
 }
 
@@ -3649,12 +3940,54 @@ function closeMobileMenu() {
     const sheet = document.getElementById('mobileMenuSheet');
     const overlay = document.getElementById('mobileMenuOverlay');
     if (!sheet || !overlay) return;
+    sheet.classList.remove('dragging');
+    sheet.style.removeProperty('--drawer-drag');
     sheet.classList.remove('active');
     overlay.classList.remove('active');
+    document.getElementById('quickBar')?.classList.remove('drawer-open');
+    requestAnimationFrame(syncBottomNavLiquid);
+}
+
+function initMobileDrawerInteraction() {
+    const sheet = document.getElementById('mobileMenuSheet');
+    if (!sheet || sheet.dataset.drawerReady === 'true') return;
+    sheet.dataset.drawerReady = 'true';
+    let startY = 0;
+    let dragY = 0;
+    let pointerId = null;
+
+    sheet.addEventListener('pointerdown', event => {
+        if (!sheet.classList.contains('active') || event.target.closest('button')) return;
+        const rect = sheet.getBoundingClientRect();
+        if (event.clientY - rect.top > 48) return;
+        pointerId = event.pointerId;
+        startY = event.clientY;
+        dragY = 0;
+        sheet.classList.add('dragging');
+        sheet.setPointerCapture(pointerId);
+    });
+
+    sheet.addEventListener('pointermove', event => {
+        if (event.pointerId !== pointerId) return;
+        dragY = Math.max(0, event.clientY - startY);
+        sheet.style.setProperty('--drawer-drag', `${dragY * 0.82}px`);
+    });
+
+    const finishDrag = event => {
+        if (event.pointerId !== pointerId) return;
+        sheet.classList.remove('dragging');
+        if (dragY > 72) closeMobileMenu();
+        else sheet.style.removeProperty('--drawer-drag');
+        pointerId = null;
+    };
+    sheet.addEventListener('pointerup', finishDrag);
+    sheet.addEventListener('pointercancel', finishDrag);
 }
 
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
+    const opacitySlider = document.getElementById('glassOpacitySlider');
+    if (opacitySlider) previewGlassOpacity(opacitySlider.value);
     const moon = document.getElementById('themeIconMoon');
     const sun = document.getElementById('themeIconSun');
     if (moon && sun) {
@@ -3755,12 +4088,31 @@ function setBgColor(color) {
 }
 
 function setGlassOpacity(value) {
-    const opacity = value / 100;
-    document.documentElement.style.setProperty('--glass-heavy', `rgba(22, 28, 42, ${opacity})`);
-    document.documentElement.style.setProperty('--glass-heavy-hover', `rgba(28, 36, 54, ${opacity + 0.1})`);
+    previewGlassOpacity(value);
     const settings = getSettings();
     settings.glassOpacity = value;
     saveData(STORAGE_KEYS.settings, settings);
+}
+
+function previewGlassOpacity(value) {
+    const opacity = value / 100;
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const base = isLight ? '247, 242, 232' : '19, 18, 16';
+    const hover = isLight ? '255, 252, 245' : '31, 29, 25';
+    const root = document.documentElement;
+    root.style.setProperty('--glass-heavy', `rgba(${base}, ${opacity})`);
+    root.style.setProperty('--glass-heavy-hover', `rgba(${hover}, ${Math.min(1, opacity + 0.1)})`);
+    root.style.setProperty('--glass-opacity', String(opacity));
+
+    const slider = document.getElementById('glassOpacitySlider');
+    const output = document.getElementById('glassOpacityValue');
+    if (slider) {
+        slider.value = value;
+        const min = Number(slider.min) || 0;
+        const max = Number(slider.max) || 100;
+        slider.style.setProperty('--range-progress', `${((Number(value) - min) / (max - min)) * 100}%`);
+    }
+    if (output) output.textContent = `${value}%`;
 }
 
 function toggleAnimations(enabled) {
@@ -3772,6 +4124,7 @@ function toggleAnimations(enabled) {
     const settings = getSettings();
     settings.animations = enabled;
     saveData(STORAGE_KEYS.settings, settings);
+    document.documentElement.classList.toggle('custom-motion-off', !enabled);
 }
 
 function lightenColor(hex, percent) {
@@ -4075,6 +4428,7 @@ function toggleTimerPanel(forceOpen) {
     if (opening) {
         updateTimerDisplays();
     }
+    requestAnimationFrame(syncBottomNavLiquid);
 }
 
 function toggleTimerForm() {
@@ -4825,6 +5179,67 @@ function confirmContaminationWarning() {
 // ============================================
 // ★ 按钮涟漪效果
 // ============================================
+function syncBottomNavLiquid() {
+    const bar = document.getElementById('quickBar');
+    if (!bar) return;
+    let indicator = bar.querySelector('.quick-nav-liquid');
+    let isNew = false;
+    if (!indicator) {
+        indicator = document.createElement('span');
+        indicator.className = 'quick-nav-liquid';
+        bar.prepend(indicator);
+        isNew = true;
+    }
+
+    const timerOpen = document.getElementById('timerPanel')?.classList.contains('open');
+    const timerButton = bar.querySelector('.quick-btn[onclick*="toggleTimerPanel"]');
+    const moreButton = bar.querySelector('.quick-more-btn');
+    const active = timerOpen
+        ? timerButton
+        : bar.classList.contains('drawer-open')
+            ? moreButton
+            : bar.querySelector('.quick-btn.active:not(.quick-more-btn)') ||
+                bar.querySelector('.quick-btn.active') || timerButton;
+    if (!active) return;
+    const barRect = bar.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    indicator.style.width = `${activeRect.width}px`;
+    indicator.style.height = `${activeRect.height}px`;
+    indicator.style.transform = `translate3d(${activeRect.left - barRect.left}px, ${activeRect.top - barRect.top}px, 0)`;
+    bar.classList.add('has-liquid-indicator');
+    if (isNew) {
+        indicator.style.transition = 'none';
+        requestAnimationFrame(() => indicator.style.removeProperty('transition'));
+    }
+}
+
+function syncSegmentIndicators() {
+    document.querySelectorAll('.inventory-tabs, .notif-tabs').forEach(container => {
+        container.classList.add('spring-segment');
+        let indicator = container.querySelector('.segment-liquid-indicator');
+        let isNew = false;
+        if (!indicator) {
+            indicator = document.createElement('span');
+            indicator.className = 'segment-liquid-indicator';
+            container.prepend(indicator);
+            isNew = true;
+        }
+        const active = container.querySelector(':scope > .active');
+        if (!active) {
+            indicator.style.opacity = '0';
+            return;
+        }
+        indicator.style.opacity = '1';
+        indicator.style.width = `${active.offsetWidth}px`;
+        indicator.style.height = `${active.offsetHeight}px`;
+        indicator.style.transform = `translate3d(${active.offsetLeft}px, ${active.offsetTop}px, 0)`;
+        if (isNew) {
+            indicator.style.transition = 'none';
+            requestAnimationFrame(() => indicator.style.removeProperty('transition'));
+        }
+    });
+}
+
 function initRippleEffect() {
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn, .new-record-btn, .quick-btn, .timer-add-btn, .timer-ctrl-btn, .topbar-btn, .theme-toggle');

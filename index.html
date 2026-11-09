@@ -12,7 +12,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="css/style.css?v=8">
+    <link rel="stylesheet" href="css/style.css?v=9">
     <script src="vendor/chart.umd.min.js"></script>
 </head>
 <body>
@@ -37,7 +37,8 @@
                 <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
                 <path d="M16 16L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <input type="text" id="globalSearch" placeholder="搜索冲洗记录、胶卷型号、药水批次...">
+            <input type="text" id="globalSearch" placeholder="搜索冲洗记录、胶卷型号、药水批次..." autocomplete="off">
+            <span class="search-status" id="globalSearchStatus">SEARCH</span>
         </div>
 
         <div class="topbar-actions">
@@ -144,6 +145,15 @@
                     <p>先确定工艺，再进入本次冲洗参数与计时</p>
                 </div>
                 <button class="btn btn-outline" onclick="openCustomProcessModal()">新增自定义工艺</button>
+            </div>
+
+            <div class="process-filter-row" id="processFilterRow" aria-label="工艺筛选">
+                <div class="process-filter-chips">
+                    <button class="process-filter-chip active" data-process-filter="all" onclick="setProcessFilter('all')">全部 <span data-process-filter-count="all">04</span></button>
+                    <button class="process-filter-chip" data-process-filter="bw" onclick="setProcessFilter('bw')">黑白 <span data-process-filter-count="bw">02</span></button>
+                    <button class="process-filter-chip" data-process-filter="color" onclick="setProcessFilter('color')">彩色 <span data-process-filter-count="color">02</span></button>
+                </div>
+                <span class="process-filter-count" id="processFilterCount">4 TECHNIQUES</span>
             </div>
 
             <div class="process-grid" id="processGrid">
@@ -583,6 +593,27 @@
 
             <!-- 筛选区 -->
             <div class="filter-bar">
+                <div class="archive-filter-top">
+                    <div class="archive-filter-ring" id="archiveFilterRing" aria-label="筛选结果占全部记录的比例">
+                        <svg viewBox="0 0 44 44" aria-hidden="true">
+                            <circle class="archive-ring-track" cx="22" cy="22" r="18" pathLength="100"/>
+                            <circle class="archive-ring-value" data-archive-ring cx="22" cy="22" r="18" pathLength="100"/>
+                        </svg>
+                        <strong id="archiveVisibleCount">0</strong>
+                    </div>
+                    <div class="archive-filter-copy">
+                        <span>FILTER RESPONSE</span>
+                        <strong id="archiveFilterSummary">全部批次</strong>
+                        <small>全部 <b id="archiveTotalCount">0</b> 条 · 当前显示 <b id="archiveVisibleCountText">0</b> 条</small>
+                    </div>
+                    <div class="record-quick-filters" aria-label="快捷筛选">
+                        <button class="record-quick-filter active" data-record-filter="all" onclick="setRecordFilterChip('all')">全部</button>
+                        <button class="record-quick-filter" data-record-filter="unreviewed" onclick="setRecordFilterChip('unreviewed')">待复盘</button>
+                        <button class="record-quick-filter" data-record-filter="four-star" onclick="setRecordFilterChip('four-star')">四星＋</button>
+                        <button class="record-quick-filter" data-record-filter="rated" onclick="setRecordFilterChip('rated')">已评分</button>
+                        <button class="record-quick-filter refine-filter-toggle" id="refineFilterToggle" onclick="toggleRefineFilters()" aria-expanded="false">精确筛选 <span>⌄</span></button>
+                    </div>
+                </div>
                 <div class="filter-row">
                     <div class="filter-item">
                         <label>流程类型</label>
@@ -896,7 +927,10 @@
                             <span class="settings-label">玻璃透明度</span>
                             <span class="settings-desc">调整玻璃面板透明度</span>
                         </div>
-                        <input type="range" class="glass-opacity-slider" id="glassOpacitySlider" min="30" max="90" value="55" onchange="setGlassOpacity(this.value)" style="max-width:200px;">
+                        <div class="linked-range-control">
+                            <output id="glassOpacityValue" for="glassOpacitySlider">55%</output>
+                            <input type="range" class="glass-opacity-slider" id="glassOpacitySlider" min="30" max="90" value="55" oninput="previewGlassOpacity(this.value)" onchange="setGlassOpacity(this.value)" aria-label="玻璃透明度">
+                        </div>
                     </div>
                     <div class="settings-item">
                         <div>
@@ -1172,6 +1206,6 @@
     <!-- ============ Toast提示 ============ -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="js/app.js?v=8"></script>
+    <script src="js/app.js?v=9"></script>
 </body>
 </html>
