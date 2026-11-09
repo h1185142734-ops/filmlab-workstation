@@ -4005,9 +4005,24 @@ function setTheme(theme) {
 // ★ 背景色/强调色/玻璃透明度 自定义
 // ============================================
 const ACCENT_COLORS = [
-    '#207cff', '#00b4d8', '#7209b7', '#e63946',
-    '#06d6a0', '#ffd60a', '#f72585', '#3a86ff',
+    { name: '安全灯', value: '#c08d56' },
+    { name: '显影青', value: '#78a39b' },
+    { name: '停显蓝', value: '#7c94a8' },
+    { name: '暗房红', value: '#b46d5d' },
+    { name: '暖纸金', value: '#c3aa7b' },
+    { name: '定影灰', value: '#8b887d' },
 ];
+
+const LEGACY_ACCENT_COLORS = {
+    '#207cff': '#7c94a8',
+    '#00b4d8': '#78a39b',
+    '#7209b7': '#8b887d',
+    '#e63946': '#b46d5d',
+    '#06d6a0': '#78a39b',
+    '#ffd60a': '#c3aa7b',
+    '#f72585': '#b46d5d',
+    '#3a86ff': '#7c94a8',
+};
 
 const BG_COLORS = [
     { name: '深炭黑', value: '#0A0C12' },
@@ -4025,9 +4040,17 @@ function initColorPickers() {
 
     // 强调色
     const accentPicker = document.getElementById('accentColorPicker');
+    if (settings.accentColor && LEGACY_ACCENT_COLORS[settings.accentColor]) {
+        settings.accentColor = LEGACY_ACCENT_COLORS[settings.accentColor];
+        saveData(STORAGE_KEYS.settings, settings);
+    }
+    const selectedAccent = settings.accentColor || ACCENT_COLORS[0].value;
     if (accentPicker) {
-        accentPicker.innerHTML = ACCENT_COLORS.map(c => 
-            `<div class="color-swatch ${settings.accentColor === c ? 'selected' : ''}" style="background:${c}" onclick="setAccentColor('${c}')"></div>`
+        accentPicker.innerHTML = ACCENT_COLORS.map(c =>
+            `<button type="button" class="color-swatch-option ${selectedAccent === c.value ? 'selected' : ''}" onclick="setAccentColor('${c.value}')" aria-pressed="${selectedAccent === c.value}" title="${c.name}">
+                <span class="color-swatch" style="--swatch:${c.value}"></span>
+                <span class="color-swatch-label">${c.name}</span>
+            </button>`
         ).join('');
     }
     // 应用已保存的强调色
