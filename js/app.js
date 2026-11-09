@@ -521,8 +521,26 @@ function getChemicalTypes(processId) {
 // ============================================
 // Toast 提示
 // ============================================
+const toastQueue = [];
+let toastActive = false;
+let activeToastMessage = '';
+
 function toast(message, type = 'info') {
+    if (activeToastMessage === message || toastQueue.some(item => item.message === message && item.type === type)) return;
+    toastQueue.push({ message, type });
+    showNextToast();
+}
+
+function showNextToast() {
+    if (toastActive || toastQueue.length === 0) return;
     const container = document.getElementById('toastContainer');
+    if (!container) {
+        toastQueue.length = 0;
+        return;
+    }
+    const { message, type } = toastQueue.shift();
+    toastActive = true;
+    activeToastMessage = message;
     const t = document.createElement('div');
     t.className = `toast ${type}`;
     const icons = {
@@ -530,14 +548,19 @@ function toast(message, type = 'info') {
         error: '<svg viewBox="0 0 24 24" fill="none" width="16" height="16"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
         info: '<svg viewBox="0 0 24 24" fill="none" width="16" height="16"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     };
-    t.innerHTML = `${icons[type] || ''}<span>${message}</span>`;
+    t.innerHTML = `${icons[type] || ''}<span>${escapeHtml(message)}</span>`;
     container.appendChild(t);
     setTimeout(() => {
         t.style.opacity = '0';
         t.style.transform = 'translateX(20px)';
         t.style.transition = 'all 0.3s ease';
-        setTimeout(() => t.remove(), 300);
-    }, 3000);
+        setTimeout(() => {
+            t.remove();
+            toastActive = false;
+            activeToastMessage = '';
+            setTimeout(showNextToast, 120);
+        }, 300);
+    }, type === 'error' ? 3000 : 2200);
 }
 
 // ============================================
@@ -1656,12 +1679,27 @@ function removeImage(index) {
 function saveRecord(event) {
     if (event) event.preventDefault();
 
-    const processType = document.getElementById('recProcessType').value;
-    if (!processType) { toast('请先选择冲洗流程', 'error'); return; }
-    const name = document.getElementById('recName').value.trim();
-    if (!name) { toast('请输入记录名称', 'error'); return; }
-    const date = document.getElementById('recDate').value;
-    if (!date) { toast('请选择冲洗日期', 'error'); return; }
+    const processField = document.getElementById('recProcessType');
+    const processType = processField.value;
+    if (!processType) {
+        revealRecordField(processField);
+        toast('请先选择冲洗流程', 'error');
+        return;
+    }
+    const nameField = document.getElementById('recName');
+    const name = nameField.value.trim();
+    if (!name) {
+        revealRecordField(nameField);
+        toast('请输入记录名称', 'error');
+        return;
+    }
+    const dateField = document.getElementById('recDate');
+    const date = dateField.value;
+    if (!date) {
+        revealRecordField(dateField);
+        toast('请选择冲洗日期', 'error');
+        return;
+    }
 
     // 收集设备数据
     const equipment = [];
@@ -1882,6 +1920,80 @@ function applyChemicalUsageDiff(inventory, previousRecord, nextRecord) {
     });
 }
 
+function setRecordSectionExpanded(card, expanded) {
+    if (!card) return;
+    const toggle = card.querySelector('.form-collapse-toggle');
+    const body = card.querySelector(':scope > .form-card-body');
+    const title = card.querySelector('.form-card-header h3')?.textContent.trim() || '当前阶段';
+    card.classList.toggle('is-collapsed', !expanded);
+    toggle?.setAttribute('aria-expanded', String(expanded));
+    toggle?.setAttribute('aria-label', `${expanded ? '收起' : '展开'}${title}`);
+    body?.setAttribute('aria-hidden', String(!expanded));
+    if (body) body.inert = !expanded;
+}
+
+function openRecordSection(card) {
+    const form = document.getElementById('recordForm');
+    if (!form || !card) return;
+    form.querySelectorAll(':scope > .form-card.collapsible-form-card').forEach(item => {
+        setRecordSectionExpanded(item, item === card);
+    });
+}
+
+function initRecordFormSections() {
+    const form = document.getElementById('recordForm');
+    if (!form || form.dataset.accordionReady === 'true') return;
+    const cards = [...form.querySelectorAll(':scope > .form-card')];
+    cards.forEach((card, index) => {
+        const header = card.querySelector(':scope > .form-card-header');
+        if (!header) return;
+
+        const body = document.createElement('div');
+        const bodyInner = document.createElement('div');
+        const toggle = document.createElement('button');
+        body.className = 'form-card-body';
+        body.id = `record-section-body-${String(index + 1).padStart(2, '0')}`;
+        bodyInner.className = 'form-card-body-inner';
+        while (header.nextSibling) bodyInner.appendChild(header.nextSibling);
+        body.appendChild(bodyInner);
+        card.appendChild(body);
+
+        toggle.type = 'button';
+        toggle.className = 'form-collapse-toggle';
+        toggle.setAttribute('aria-controls', body.id);
+        toggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        toggle.addEventListener('click', event => {
+            event.stopPropagation();
+            const shouldOpen = card.classList.contains('is-collapsed');
+            openRecordSection(shouldOpen ? card : null);
+        });
+        header.appendChild(toggle);
+
+        card.classList.add('collapsible-form-card');
+        header.addEventListener('click', event => {
+            if (event.target.closest('.form-collapse-toggle')) return;
+            openRecordSection(card);
+        });
+        setRecordSectionExpanded(card, index === 0);
+    });
+    form.dataset.accordionReady = 'true';
+}
+
+function resetRecordFormSections() {
+    const cards = [...document.querySelectorAll('#recordForm > .form-card.collapsible-form-card')];
+    cards.forEach((card, index) => setRecordSectionExpanded(card, index === 0));
+}
+
+function revealRecordField(field) {
+    if (!field) return;
+    const card = field.closest('.form-card.collapsible-form-card');
+    if (card) openRecordSection(card);
+    requestAnimationFrame(() => {
+        card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        field.focus({ preventScroll: true });
+    });
+}
+
 function resetForm({ cleanupDraftImages = true } = {}) {
     if (cleanupDraftImages) {
         const originalImages = new Set(appState.originalRecordImages || []);
@@ -1905,6 +2017,7 @@ function resetForm({ cleanupDraftImages = true } = {}) {
     document.getElementById('currentProcessName').textContent = '未选择';
     document.getElementById('formTitle').textContent = '开始冲洗';
     document.getElementById('formSubtitle').textContent = '记录胶卷、药水批次与实际步骤';
+    resetRecordFormSections();
 }
 
 // 编辑记录
@@ -3583,6 +3696,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化主题
     initTheme();
 
+    // 初始化新建记录的分阶段折叠
+    initRecordFormSections();
+
     // 初始化头像/名称
     initProfile();
 
@@ -3659,7 +3775,7 @@ function closeMobileMenu() {
 
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#edf0f3' : '#080b10');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#ffffff' : '#080b10');
     document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
         ?.setAttribute('content', theme === 'light' ? 'default' : 'black-translucent');
     const moon = document.getElementById('themeIconMoon');
