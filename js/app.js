@@ -738,9 +738,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 function renderProcessGrid() {
     const grid = document.getElementById('processGrid');
-    grid.innerHTML = PRESET_PROCESSES.map(p => `
+    grid.innerHTML = PRESET_PROCESSES.map((p, index) => `
         <div class="process-card ${appState.selectedProcess === p.id ? 'selected' : ''}"
              onclick="selectProcess('${p.id}')">
+            <span class="process-card-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
             <div class="process-card-icon">${PROCESS_ICONS[p.icon] || PROCESS_ICONS.custom}</div>
             <div class="process-card-title">${p.name}</div>
             <div class="process-card-desc">${p.desc}</div>
@@ -3655,6 +3656,9 @@ function closeMobileMenu() {
 
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#edf0f3' : '#080b10');
+    document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+        ?.setAttribute('content', theme === 'light' ? 'default' : 'black-translucent');
     const moon = document.getElementById('themeIconMoon');
     const sun = document.getElementById('themeIconSun');
     if (moon && sun) {
