@@ -4056,9 +4056,11 @@ function initTimers() {
     }
 }
 
-function toggleTimerPanel() {
+function toggleTimerPanel(forceOpen) {
     const panel = document.getElementById('timerPanel');
-    const opening = !panel.classList.contains('open');
+    const opening = typeof forceOpen === 'boolean'
+        ? forceOpen
+        : !panel.classList.contains('open');
     panel.classList.toggle('open', opening);
     document.querySelector('.quick-btn[onclick*="toggleTimerPanel"]')?.classList.toggle('active', opening);
     if (opening) {
@@ -4313,16 +4315,16 @@ function renderGallery() {
         return;
     }
 
-    empty.style.display = 'none';
+    if (empty) empty.style.display = 'none';
     nav.style.display = 'flex';
     thumbs.style.display = 'flex';
     galleryIndex = 0;
 
     // 渲染轮播
+    document.getElementById('galleryCarousel')?.remove();
     const carousel = document.createElement('div');
     carousel.className = 'gallery-carousel';
     carousel.id = 'galleryCarousel';
-    stage.innerHTML = '';
     stage.appendChild(carousel);
 
     galleryImages.forEach((img, i) => {
