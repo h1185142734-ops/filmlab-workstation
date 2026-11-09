@@ -6264,19 +6264,19 @@ a:focus-visible,
    冷银、青绿药水标识与胶片校准语言
    ============================================ */
 :root {
-    --ice-blue: #5f9fdf;
-    --ice-blue-light: #91bce9;
-    --ice-blue-bright: #c9e3f5;
-    --ice-blue-dim: #295f94;
-    --ice-blue-glow: rgba(75, 145, 205, 0.22);
-    --ice-blue-glow-strong: rgba(75, 145, 205, 0.34);
-    --ice-blue-soft: rgba(95, 159, 223, 0.09);
-    --ice-blue-softer: rgba(95, 159, 223, 0.045);
+    --ice-blue: #4f8ff0;
+    --ice-blue-light: #86b8ff;
+    --ice-blue-bright: #cfe6ff;
+    --ice-blue-dim: #295f9f;
+    --ice-blue-glow: rgba(55, 137, 255, 0.28);
+    --ice-blue-glow-strong: rgba(55, 137, 255, 0.42);
+    --ice-blue-soft: rgba(79, 143, 240, 0.11);
+    --ice-blue-softer: rgba(79, 143, 240, 0.055);
 
-    --chem-teal: #71d4c0;
-    --chem-teal-bright: #b8f1e6;
-    --chem-teal-soft: rgba(90, 197, 176, 0.11);
-    --chem-teal-line: rgba(113, 212, 192, 0.3);
+    --chem-teal: #43dec6;
+    --chem-teal-bright: #adf8eb;
+    --chem-teal-soft: rgba(67, 222, 198, 0.12);
+    --chem-teal-line: rgba(67, 222, 198, 0.34);
 
     --bg-base: #080b10;
     --bg-deep: #0b0f15;
@@ -6310,18 +6310,18 @@ html[data-theme="light"] {
 }
 
 [data-theme="light"] {
-    --ice-blue: #477eae;
-    --ice-blue-light: #2d668f;
-    --ice-blue-bright: #194f79;
-    --ice-blue-dim: #7199b8;
-    --ice-blue-glow: rgba(46, 103, 147, 0.14);
-    --ice-blue-glow-strong: rgba(46, 103, 147, 0.23);
-    --ice-blue-soft: rgba(60, 119, 158, 0.08);
-    --ice-blue-softer: rgba(60, 119, 158, 0.04);
-    --chem-teal: #087f70;
-    --chem-teal-bright: #046454;
-    --chem-teal-soft: rgba(8, 127, 112, 0.085);
-    --chem-teal-line: rgba(8, 127, 112, 0.22);
+    --ice-blue: #1f6db8;
+    --ice-blue-light: #155990;
+    --ice-blue-bright: #0c456f;
+    --ice-blue-dim: #7ca8cb;
+    --ice-blue-glow: rgba(31, 109, 184, 0.18);
+    --ice-blue-glow-strong: rgba(31, 109, 184, 0.29);
+    --ice-blue-soft: rgba(31, 109, 184, 0.09);
+    --ice-blue-softer: rgba(31, 109, 184, 0.045);
+    --chem-teal: #008b76;
+    --chem-teal-bright: #006b5d;
+    --chem-teal-soft: rgba(0, 139, 118, 0.095);
+    --chem-teal-line: rgba(0, 139, 118, 0.25);
 
     --bg-base: #edf0f3;
     --bg-deep: #e5e9ed;
@@ -6836,5 +6836,349 @@ body::after {
     .workspace-stage::after,
     .workspace-card.active::before {
         animation: none !important;
+    }
+}
+
+/* ============================================
+   Darkroom Signature 2.0
+   选择性高饱和 + 光学玻璃折射
+   ============================================ */
+::selection {
+    color: #fff;
+    background: rgba(67, 222, 198, 0.30);
+}
+
+.topbar-avatar {
+    color: #f7fcff;
+    border-color: rgba(174, 221, 255, 0.34);
+    background: linear-gradient(145deg, #528fff 0%, #316cc8 54%, #1a8f86 128%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.38),
+        inset 0 -1px 0 rgba(0, 35, 61, 0.24),
+        0 8px 22px rgba(38, 111, 194, 0.28);
+}
+
+.btn-primary,
+.new-record-btn {
+    color: #f7fbff;
+    background: linear-gradient(145deg, #4d99ff 0%, #286bd3 48%, #17509a 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.36),
+        inset 0 -1px 0 rgba(3, 28, 62, 0.25),
+        0 10px 28px rgba(32, 105, 220, 0.32);
+}
+
+.btn-primary:hover,
+.new-record-btn:hover {
+    background: linear-gradient(145deg, #68aaff 0%, #3276df 48%, #1c60ae 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        0 14px 34px rgba(38, 120, 232, 0.38);
+}
+
+[data-theme="light"] .topbar-avatar {
+    background: linear-gradient(145deg, #2a74bd 0%, #16558f 58%, #087f70 125%);
+    border-color: rgba(255, 255, 255, 0.72);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.34),
+        0 8px 20px rgba(31, 85, 126, 0.24);
+}
+
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .new-record-btn {
+    background: linear-gradient(145deg, #2f7bc2 0%, #1d5f9d 52%, #154773 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.24),
+        0 10px 26px rgba(26, 82, 127, 0.25);
+}
+
+.workspace-stage {
+    background:
+        radial-gradient(ellipse 74% 76% at 56% 52%, rgba(34, 102, 201, 0.2), transparent 68%),
+        radial-gradient(ellipse 42% 52% at 84% 18%, rgba(67, 222, 198, 0.085), transparent 72%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.08), transparent 36%),
+        rgba(8, 13, 21, 0.74);
+    box-shadow:
+        inset 1px 0 0 rgba(87, 167, 255, 0.11),
+        inset -1px 0 0 rgba(67, 222, 198, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        var(--shadow-liquid);
+}
+
+.workspace-stage::before {
+    opacity: 0.84;
+    animation: signatureAura 9s ease-in-out infinite alternate;
+}
+
+.workspace-inspector {
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.075), transparent 32%),
+        radial-gradient(ellipse 90% 70% at 100% 0%, rgba(67, 222, 198, 0.055), transparent 66%),
+        var(--glass-heavy);
+    box-shadow:
+        inset 1px 0 0 rgba(87, 167, 255, 0.08),
+        inset -1px 0 0 rgba(67, 222, 198, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        var(--shadow-liquid);
+}
+
+.workspace-card.active {
+    border-color: rgba(67, 222, 198, 0.52);
+    background:
+        radial-gradient(ellipse at 12% 4%, rgba(118, 188, 255, 0.24), transparent 30%),
+        radial-gradient(ellipse at 90% 94%, rgba(67, 222, 198, 0.13), transparent 37%),
+        linear-gradient(145deg, rgba(40, 93, 172, 0.64), rgba(8, 25, 41, 0.96)),
+        #081522;
+    box-shadow:
+        inset 1px 0 0 rgba(116, 188, 255, 0.2),
+        inset -1px 0 0 rgba(67, 222, 198, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+        0 28px 62px rgba(0, 0, 0, 0.34),
+        0 0 34px rgba(48, 157, 211, 0.12);
+}
+
+.workspace-card.active .workspace-card-value {
+    color: #eaf5ff;
+    background: linear-gradient(92deg, #ffffff 6%, #b8dcff 58%, #a5f6e9 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 18px rgba(80, 159, 234, 0.18));
+}
+
+.workspace-card.active::before {
+    opacity: 0.82;
+    background:
+        radial-gradient(ellipse 3px 2px at 50% 50%, rgba(2, 7, 12, 0.88) 0 56%, transparent 62%) 0 0 / 8px 19px repeat-y,
+        radial-gradient(ellipse 3px 2px at 50% 50%, rgba(2, 7, 12, 0.88) 0 56%, transparent 62%) 100% 0 / 8px 19px repeat-y;
+}
+
+.process-card {
+    transition:
+        transform 0.42s var(--liquid-spring),
+        border-color 0.32s ease,
+        box-shadow 0.42s var(--liquid-spring),
+        background-color 0.32s ease !important;
+}
+
+.process-card:hover {
+    transform: translateY(-4px) scale(1.006);
+    border-color: rgba(79, 143, 240, 0.34);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 22px 48px rgba(0, 0, 0, 0.28),
+        0 0 26px rgba(51, 128, 219, 0.09);
+}
+
+.process-card.selected {
+    border-color: rgba(67, 222, 198, 0.42);
+    box-shadow:
+        inset 1px 0 0 rgba(79, 143, 240, 0.14),
+        inset -1px 0 0 rgba(67, 222, 198, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 20px 44px rgba(0, 0, 0, 0.24),
+        0 0 30px rgba(45, 170, 158, 0.10);
+}
+
+.process-card::after {
+    display: block !important;
+    content: '';
+    position: absolute;
+    right: 18%;
+    bottom: -25px;
+    left: 18%;
+    z-index: -1;
+    height: 54px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(49, 133, 228, 0.2), transparent 70%);
+    filter: blur(15px);
+    opacity: 0.5;
+    transition: opacity 0.35s ease;
+}
+
+.process-card:hover::after,
+.process-card.selected::after {
+    opacity: 0.9;
+}
+
+.process-card-index {
+    color: #55a7ff;
+    background: linear-gradient(155deg, #94c9ff, #55a7ff 56%, #43dec6);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.66;
+    transition: opacity 0.3s ease, transform 0.35s var(--liquid-spring);
+}
+
+.process-card:hover .process-card-index,
+.process-card.selected .process-card-index {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.04);
+}
+
+.process-card-icon {
+    transition:
+        transform 0.35s var(--liquid-spring),
+        border-color 0.3s ease,
+        box-shadow 0.35s ease;
+}
+
+.process-card:hover .process-card-icon,
+.process-card.selected .process-card-icon {
+    transform: rotate(-4deg) scale(1.04);
+    border-color: rgba(67, 222, 198, 0.46);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 0 22px rgba(67, 222, 198, 0.12);
+}
+
+.workspace-template-heading h2::before,
+.custom-process-section > .section-header h2::before {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--chem-teal);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+}
+
+.workspace-template-heading h2::before {
+    content: 'PROCESS LIBRARY / 01';
+}
+
+.custom-process-section > .section-header h2::before {
+    content: 'PERSONAL PROCESS / 02';
+}
+
+.quick-bar {
+    background-image:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.11), transparent 30%),
+        linear-gradient(320deg, rgba(67, 222, 198, 0.07), transparent 48%);
+    box-shadow:
+        inset 1px 0 0 rgba(79, 143, 240, 0.11),
+        inset -1px 0 0 rgba(67, 222, 198, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 18px 46px rgba(0, 0, 0, 0.42);
+}
+
+.quick-btn.active {
+    color: #d7eaff;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(124, 183, 255, 0.18), transparent 72%),
+        linear-gradient(180deg, rgba(55, 118, 211, 0.28), rgba(23, 56, 104, 0.14));
+    box-shadow:
+        inset 0 1px 0 rgba(188, 221, 255, 0.14),
+        inset 0 0 0 1px rgba(79, 143, 240, 0.16);
+}
+
+.quick-btn.active::before {
+    width: 22px;
+    background: linear-gradient(90deg, transparent, #68e6d0 22%, #78bdff 78%, transparent);
+    box-shadow: 0 0 10px rgba(67, 222, 198, 0.32);
+}
+
+[data-theme="light"] .workspace-stage {
+    background:
+        radial-gradient(ellipse 74% 76% at 54% 50%, rgba(65, 137, 209, 0.12), transparent 70%),
+        radial-gradient(ellipse 44% 52% at 86% 16%, rgba(0, 139, 118, 0.055), transparent 72%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.92), transparent 42%),
+        rgba(250, 252, 253, 0.8);
+}
+
+[data-theme="light"] .workspace-inspector {
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.96), transparent 45%),
+        radial-gradient(ellipse 88% 64% at 100% 0%, rgba(0, 139, 118, 0.04), transparent 68%),
+        rgba(255, 255, 255, 0.78);
+}
+
+[data-theme="light"] .process-card:hover {
+    border-color: rgba(31, 109, 184, 0.32);
+}
+
+[data-theme="light"] .process-card.selected {
+    border-color: rgba(0, 139, 118, 0.34);
+}
+
+[data-theme="light"] .quick-bar {
+    background-image:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.98), transparent 40%),
+        linear-gradient(320deg, rgba(0, 139, 118, 0.045), transparent 54%);
+}
+
+[data-theme="light"] .quick-btn.active {
+    color: #0c5f58;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.95), transparent 70%),
+        linear-gradient(180deg, rgba(0, 139, 118, 0.13), rgba(31, 109, 184, 0.06));
+}
+
+@keyframes signatureAura {
+    from {
+        opacity: 0.58;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 0.92;
+        transform: scale(1.06);
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace-card.active .workspace-card-value {
+        filter: drop-shadow(0 0 12px rgba(80, 159, 234, 0.14));
+    }
+}
+
+@media (max-width: 360px) {
+    .timer-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 10px;
+    }
+
+    .timer-item-label {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .timer-item-name,
+    .timer-item-step {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .timer-display {
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 0;
+        font-size: 18px;
+    }
+
+    .timer-controls {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-content: flex-end;
+    }
+
+    .timer-ctrl-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .workspace-stage::before,
+    .process-card,
+    .process-card-index,
+    .process-card-icon,
+    .quick-btn.active::before {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
     }
 }
