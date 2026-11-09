@@ -4288,7 +4288,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
     .contamination-warning-rules li {
         font-size: 12px;
-        padding: 6px 0;
+        padding: 6px 0 6px 22px;
     }
 
     /* === 通知 === */
